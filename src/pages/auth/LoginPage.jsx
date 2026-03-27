@@ -1,9 +1,8 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 
 export default function LoginPage() {
-  const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [form, setForm] = useState({ email: '', password: '' })
@@ -27,8 +26,8 @@ export default function LoginPage() {
       setLoading(false)
       return
     }
-
-    navigate('/')
+    // Don't navigate manually — AuthContext will update the session and
+    // RouterGuard will automatically redirect away from /login
   }
 
   return (
