@@ -11,6 +11,7 @@ import SignUpPage from './pages/auth/SignUpPage'
 import PendingPage from './pages/auth/PendingPage'
 import DeniedPage from './pages/auth/DeniedPage'
 import ResetPasswordPage from './pages/auth/ResetPasswordPage'
+import ForgotPasswordPage from './pages/auth/ForgotPasswordPage'
 
 // App pages
 import HomePage from './pages/HomePage'
@@ -62,6 +63,7 @@ function RouterGuard() {
         {/* Public */}
         <Route path="/login" element={!isAuthenticated ? <LoginPage /> : <Navigate to="/" replace />} />
         <Route path="/signup" element={!isAuthenticated ? <SignUpPage /> : <Navigate to="/" replace />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
 
         {/* Awaiting approval */}
