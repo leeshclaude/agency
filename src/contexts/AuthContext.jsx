@@ -5,15 +5,23 @@ const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
   const [session, setSession] = useState(undefined) // undefined = loading
-  const [profile, setProfile] = useState(null)
+  const [profile, setProfile] = useState(undefined) // undefined = loading
 
   useEffect(() => {
+    // getSession fires once on mount
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
-      if (session) fetchProfile(session.user.id)
+      if (session) {
+        fetchProfile(session.user.id)
+      } else {
+        setProfile(null)
+      }
     })
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    // onAuthStateChange fires on login/logout — skip the initial INITIAL_SESSION
+    // event since getSession() above already handles it
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'INITIAL_SESSION') return
       setSession(session)
       if (session) {
         fetchProfile(session.user.id)
@@ -31,18 +39,20 @@ export function AuthProvider({ children }) {
       .select('*')
       .eq('id', userId)
       .single()
-    setProfile(data)
+    setProfile(data ?? null)
   }
 
   async function refreshProfile() {
     if (session) await fetchProfile(session.user.id)
   }
 
+  const isLoading = session === undefined || profile === undefined
+
   const value = {
     session,
     profile,
     refreshProfile,
-    isLoading: session === undefined,
+    isLoading,
     isAuthenticated: !!session,
     isApproved: profile?.status === 'approved',
     isPending: profile?.status === 'pending',
