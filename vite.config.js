@@ -40,6 +40,10 @@ export default defineConfig({
         ],
       },
       workbox: {
+        // Tell the service worker to serve index.html for all navigation
+        // requests — this is required for React Router to work in PWA mode
+        navigateFallback: '/index.html',
+        navigateFallbackDenylist: [/^\/api\//],
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
         runtimeCaching: [
           {
