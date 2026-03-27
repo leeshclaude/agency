@@ -1,0 +1,193 @@
+@import "tailwindcss";
+
+@theme {
+  --color-rose-50: #fdf8f6;
+  --color-rose-100: #f7ede8;
+  --color-rose-200: #edd5cc;
+  --color-rose-300: #deb8ab;
+  --color-rose-400: #c9a99a;
+  --color-rose-500: #b58f80;
+  --color-rose-600: #9a7060;
+  --color-rose-700: #7d5548;
+  --color-warm-50: #faf8f6;
+  --color-warm-100: #f5f0ec;
+  --color-warm-200: #ece4dc;
+  --color-warm-300: #ddd2c7;
+  --color-warm-400: #c8b8a8;
+  --color-warm-500: #b09d8a;
+  --color-warm-600: #8e7a68;
+  --color-warm-700: #6e5e4f;
+  --color-warm-800: #4e4238;
+  --color-warm-900: #302820;
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+@layer base {
+  * {
+    -webkit-tap-highlight-color: transparent;
+    box-sizing: border-box;
+  }
+
+  html {
+    background-color: #faf8f6;
+    color: #302820;
+  }
+
+  body {
+    margin: 0;
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  #root {
+    min-height: 100svh;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    background-color: #c9a99a;
+    color: #fff;
+    font-weight: 500;
+    padding: 12px 20px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    transition: all 150ms;
+    font-size: 15px;
+  }
+  .btn-primary:hover { background-color: #b58f80; }
+  .btn-primary:active { transform: scale(0.97); }
+  .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    background-color: #fff;
+    color: #6e5e4f;
+    font-weight: 500;
+    padding: 12px 20px;
+    border-radius: 12px;
+    border: 1px solid #ddd2c7;
+    cursor: pointer;
+    transition: all 150ms;
+    font-size: 15px;
+  }
+  .btn-secondary:hover { background-color: #f5f0ec; }
+  .btn-secondary:active { transform: scale(0.97); }
+  .btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+  .btn-danger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #fef2f2;
+    color: #dc2626;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: 12px;
+    border: 1px solid #fecaca;
+    cursor: pointer;
+    transition: all 150ms;
+    font-size: 13px;
+  }
+  .btn-danger:hover { background-color: #fee2e2; }
+  .btn-danger:active { transform: scale(0.97); }
+
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    color: #8e7a68;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    transition: all 150ms;
+    font-size: 14px;
+  }
+  .btn-ghost:hover { background-color: #f5f0ec; }
+  .btn-ghost:active { transform: scale(0.97); }
+
+  .input-field {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1px solid #ddd2c7;
+    background: #fff;
+    color: #302820;
+    font-size: 16px; /* prevents iOS zoom */
+    font-family: var(--font-sans);
+    transition: all 150ms;
+    outline: none;
+  }
+  .input-field::placeholder { color: #b09d8a; }
+  .input-field:focus {
+    border-color: #c9a99a;
+    box-shadow: 0 0 0 3px rgba(201, 169, 154, 0.15);
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid #ece4dc;
+    box-shadow: 0 1px 3px rgba(48, 40, 32, 0.04);
+  }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #b09d8a;
+  }
+
+  .page-container {
+    max-width: 512px;
+    margin: 0 auto;
+    padding: 24px 16px 112px;
+  }
+
+  .badge-pending {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 10px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 500;
+    background-color: #fef3c7;
+    color: #92400e;
+  }
+
+  .badge-approved {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 10px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 500;
+    background-color: #d1fae5;
+    color: #065f46;
+  }
+
+  .badge-denied {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 10px;
+    border-radius: 9999px;
+    font-size: 12px;
+    font-weight: 500;
+    background-color: #fee2e2;
+    color: #991b1b;
+  }
+}
