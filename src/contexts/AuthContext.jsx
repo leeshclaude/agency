@@ -4,22 +4,18 @@ import { supabase } from '../lib/supabase'
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
-  const [session, setSession] = useState(undefined) // undefined = loading
-  const [profile, setProfile] = useState(undefined) // undefined = loading
+  const [session, setSession] = useState(undefined) // undefined = initial load
+  const [profile, setProfile] = useState(null)
+  const [profileLoading, setProfileLoading] = useState(false)
 
   useEffect(() => {
-    // getSession fires once on mount
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
       if (session) {
         fetchProfile(session.user.id)
-      } else {
-        setProfile(null)
       }
     })
 
-    // onAuthStateChange fires on login/logout — skip the initial INITIAL_SESSION
-    // event since getSession() above already handles it
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'INITIAL_SESSION') return
       setSession(session)
@@ -34,19 +30,24 @@ export function AuthProvider({ children }) {
   }, [])
 
   async function fetchProfile(userId) {
+    setProfileLoading(true)
     const { data } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', userId)
       .single()
     setProfile(data ?? null)
+    setProfileLoading(false)
   }
 
   async function refreshProfile() {
     if (session) await fetchProfile(session.user.id)
   }
 
-  const isLoading = session === undefined || profile === undefined
+  // Show loading spinner while:
+  // 1. Initial session check hasn't finished yet (session === undefined)
+  // 2. We have a session but are still fetching the profile
+  const isLoading = session === undefined || profileLoading
 
   const value = {
     session,
