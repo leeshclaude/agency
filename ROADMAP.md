@@ -11,6 +11,13 @@
 - [x] Module 4: Session bookings with registration and hidden meeting links
 - [x] Module 5: Rate card builder (5-step form, PDF export, saved to profile)
 - [x] Admin dashboard (approve, deny, remove members)
+- [x] Improvement 1: Forgot password flow
+- [x] Improvement 2: Admin email notification on new signup (Resend API) + branded confirmation email to new members (Gmail SMTP + Supabase template)
+- [x] Improvement 3: Profile photo upload (Supabase Storage avatars bucket, avatar shown in chat and home page)
+- [x] Improvement 4: Settings page (profile photo, display name, Instagram handle, followers, city/state, password change, sign out, admin link)
+- [x] Improvement 5: Chat redesign — Instagram DM style with grouped messages, long press to delete, avatars per group
+- [x] Improvement 6: Chat channels — General 💬, Intro's ✨, Engagement 💕, Brand Ops 💸 (General default)
+- [x] Chat extras — admin badge on messages, pinned messages per channel, delete button always right-aligned
 
 ---
 
