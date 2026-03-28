@@ -15,7 +15,6 @@ export default function ChatPage() {
   useEffect(() => {
     fetchMessages()
 
-    // Realtime subscription
     const channel = supabase
       .channel('public:messages')
       .on(
@@ -23,7 +22,6 @@ export default function ChatPage() {
         { event: '*', schema: 'public', table: 'messages' },
         (payload) => {
           if (payload.eventType === 'INSERT') {
-            // Fetch full message with profile join
             fetchNewMessage(payload.new.id)
           } else if (payload.eventType === 'DELETE') {
             setMessages((prev) => prev.filter((m) => m.id !== payload.old.id))
@@ -36,12 +34,8 @@ export default function ChatPage() {
   }, [])
 
   useEffect(() => {
-    scrollToBottom()
-  }, [messages])
-
-  function scrollToBottom() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }
+  }, [messages])
 
   async function fetchMessages() {
     setLoading(true)
@@ -69,7 +63,6 @@ export default function ChatPage() {
       .single()
 
     if (data) setMessages((prev) => {
-      // Avoid duplicates
       if (prev.find((m) => m.id === data.id)) return prev
       return [...prev, data]
     })
@@ -88,15 +81,24 @@ export default function ChatPage() {
       content: text,
     })
 
-    if (error) {
-      setInput(text) // restore on failure
-    }
+    if (error) setInput(text)
     setSending(false)
     inputRef.current?.focus()
   }
 
   async function deleteMessage(id) {
     await supabase.from('messages').delete().eq('id', id)
+  }
+
+  // Group consecutive messages from the same sender
+  const groups = []
+  for (const msg of messages) {
+    const last = groups[groups.length - 1]
+    if (last && last.userId === msg.user_id) {
+      last.messages.push(msg)
+    } else {
+      groups.push({ userId: msg.user_id, messages: [msg] })
+    }
   }
 
   return (
@@ -117,26 +119,70 @@ export default function ChatPage() {
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-4">
-        <div className="max-w-lg mx-auto space-y-3">
+        <div className="max-w-lg mx-auto space-y-4">
           {loading ? (
             <div className="text-center py-12" style={{ color: '#b09d8a' }}>Loading messages…</div>
           ) : messages.length === 0 ? (
             <div className="text-center py-16">
               <span style={{ fontSize: 32 }}>💬</span>
-              <p className="mt-3 text-sm" style={{ color: '#b09d8a' }}>
-                No messages yet. Say hello!
-              </p>
+              <p className="mt-3 text-sm" style={{ color: '#b09d8a' }}>No messages yet. Say hello!</p>
             </div>
           ) : (
-            messages.map((msg) => (
-              <MessageBubble
-                key={msg.id}
-                message={msg}
-                isOwn={msg.user_id === profile.id}
-                isAdmin={isAdmin}
-                onDelete={() => deleteMessage(msg.id)}
-              />
-            ))
+            groups.map((group, gi) => {
+              const isOwn = group.userId === profile.id
+              const firstMsg = group.messages[0]
+              const name = firstMsg.profiles?.full_name || 'Unknown'
+              const handle = firstMsg.profiles?.instagram_handle || ''
+              const avatarUrl = firstMsg.profiles?.avatar_url || null
+
+              return (
+                <div key={gi} className={`flex gap-2 ${isOwn ? 'flex-row-reverse' : 'flex-row'} items-end`}>
+                  {/* Avatar — shown once per group, aligned to bottom */}
+                  {!isOwn && (
+                    <div className="flex-shrink-0">
+                      <Avatar avatarUrl={avatarUrl} name={name} size={32} />
+                    </div>
+                  )}
+
+                  {/* Bubble column */}
+                  <div className={`flex flex-col gap-1 max-w-xs ${isOwn ? 'items-end' : 'items-start'}`}>
+                    {/* Name + handle — shown once per group */}
+                    {!isOwn && (
+                      <div className="flex items-baseline gap-1.5 px-1 mb-0.5">
+                        <span className="text-xs font-semibold" style={{ color: '#4e4238' }}>{name}</span>
+                        <span className="text-xs" style={{ color: '#b09d8a' }}>{handle}</span>
+                      </div>
+                    )}
+
+                    {group.messages.map((msg, mi) => {
+                      const isLast = mi === group.messages.length - 1
+                      const isFirst = mi === 0
+                      const canDelete = isOwn || isAdmin
+
+                      return (
+                        <MessageBubble
+                          key={msg.id}
+                          message={msg}
+                          isOwn={isOwn}
+                          isFirst={isFirst}
+                          isLast={isLast}
+                          canDelete={canDelete}
+                          onDelete={() => deleteMessage(msg.id)}
+                        />
+                      )
+                    })}
+
+                    {/* Timestamp under last bubble */}
+                    <span className="text-xs px-1" style={{ color: '#b09d8a' }}>
+                      {new Date(group.messages[group.messages.length - 1].created_at).toLocaleTimeString('en-AU', {
+                        hour: 'numeric',
+                        minute: '2-digit',
+                      })}
+                    </span>
+                  </div>
+                </div>
+              )
+            })
           )}
           <div ref={bottomRef} />
         </div>
@@ -178,73 +224,81 @@ export default function ChatPage() {
   )
 }
 
-function MessageBubble({ message, isOwn, isAdmin, onDelete }) {
+function MessageBubble({ message, isOwn, isFirst, isLast, canDelete, onDelete }) {
   const [showDelete, setShowDelete] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const longPressTimer = useRef(null)
 
-  const name = message.profiles?.full_name || 'Unknown'
-  const handle = message.profiles?.instagram_handle || ''
-  const avatarUrl = message.profiles?.avatar_url || null
-  const time = new Date(message.created_at).toLocaleTimeString('en-AU', {
-    hour: 'numeric',
-    minute: '2-digit',
-  })
+  // Long press to reveal delete on mobile
+  function handleTouchStart() {
+    if (!canDelete) return
+    longPressTimer.current = setTimeout(() => {
+      setShowDelete(true)
+    }, 500)
+  }
+
+  function handleTouchEnd() {
+    clearTimeout(longPressTimer.current)
+  }
+
+  function handleDelete() {
+    if (confirmDelete) {
+      onDelete()
+      setShowDelete(false)
+      setConfirmDelete(false)
+    } else {
+      setConfirmDelete(true)
+    }
+  }
+
+  // Bubble shape: round except the corner connecting to the group
+  const radius = 18
+  const sharpCorner = 5
+  const ownStyle = {
+    background: '#c9a99a',
+    color: '#fff',
+    borderTopLeftRadius: radius,
+    borderTopRightRadius: isFirst ? radius : sharpCorner,
+    borderBottomRightRadius: isLast ? sharpCorner : sharpCorner,
+    borderBottomLeftRadius: radius,
+  }
+  const otherStyle = {
+    background: '#fff',
+    color: '#302820',
+    border: '1px solid #ece4dc',
+    borderTopLeftRadius: isFirst ? radius : sharpCorner,
+    borderTopRightRadius: radius,
+    borderBottomRightRadius: radius,
+    borderBottomLeftRadius: isLast ? sharpCorner : sharpCorner,
+  }
 
   return (
-    <div
-      className={`flex ${isOwn ? 'flex-col items-end' : 'flex-row items-end gap-2'}`}
-      onMouseEnter={() => setShowDelete(true)}
-      onMouseLeave={() => { setShowDelete(false); setConfirmDelete(false) }}
-    >
-      {!isOwn && (
-        <div className="flex-shrink-0 mb-1">
-          <Avatar avatarUrl={avatarUrl} name={name} size={32} />
-        </div>
-      )}
-      <div className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'}`}>
-      {!isOwn && (
-        <div className="flex items-baseline gap-1.5 mb-1 px-1">
-          <span className="text-xs font-semibold" style={{ color: '#4e4238' }}>{name}</span>
-          <span className="text-xs" style={{ color: '#b09d8a' }}>{handle}</span>
-        </div>
-      )}
-      <div className="relative flex items-end gap-2">
-        {isAdmin && !isOwn && showDelete && (
-          <button
-            onClick={() => {
-              if (confirmDelete) onDelete()
-              else setConfirmDelete(true)
-            }}
-            className="text-xs px-2 py-1 rounded-lg flex-shrink-0"
-            style={{ background: '#fee2e2', color: '#dc2626' }}
-          >
-            {confirmDelete ? 'Sure?' : '✕'}
-          </button>
-        )}
+    <div className="relative">
+      <div
+        className={`flex items-center gap-2 ${isOwn ? 'flex-row-reverse' : 'flex-row'}`}
+        onMouseEnter={() => canDelete && setShowDelete(true)}
+        onMouseLeave={() => { setShowDelete(false); setConfirmDelete(false) }}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        onTouchMove={handleTouchEnd}
+      >
         <div
-          className="max-w-xs px-4 py-2.5 rounded-2xl text-sm"
-          style={
-            isOwn
-              ? { background: '#c9a99a', color: '#fff', borderBottomRightRadius: 6 }
-              : { background: '#fff', color: '#302820', border: '1px solid #ece4dc', borderBottomLeftRadius: 6 }
-          }
+          className="px-3.5 py-2 text-sm leading-relaxed"
+          style={isOwn ? ownStyle : otherStyle}
         >
           {message.content}
         </div>
-        {isOwn && showDelete && (
+
+        {showDelete && (
           <button
-            onClick={() => {
-              if (confirmDelete) onDelete()
-              else setConfirmDelete(true)
-            }}
-            className="text-xs px-2 py-1 rounded-lg flex-shrink-0"
-            style={{ background: '#fee2e2', color: '#dc2626' }}
+            onClick={handleDelete}
+            onTouchEnd={(e) => { e.preventDefault(); handleDelete() }}
+            className="flex-shrink-0 text-xs px-2 py-1 rounded-lg"
+            style={{ background: confirmDelete ? '#dc2626' : '#fee2e2', color: confirmDelete ? '#fff' : '#dc2626' }}
           >
             {confirmDelete ? 'Sure?' : '✕'}
           </button>
         )}
-      </div>
-      <span className="text-xs mt-1 px-1" style={{ color: '#b09d8a' }}>{time}</span>
       </div>
     </div>
   )
