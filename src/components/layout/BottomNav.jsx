@@ -1,16 +1,14 @@
 import { NavLink } from 'react-router-dom'
-import { useAuth } from '../../contexts/AuthContext'
 
 const NAV = [
   { to: '/', label: 'Home', icon: HomeIcon, exact: true },
   { to: '/chat', label: 'Chat', icon: ChatIcon },
   { to: '/sessions', label: 'Sessions', icon: CalendarIcon },
   { to: '/rate-card', label: 'Rate Card', icon: DocumentIcon },
+  { to: '/settings', label: 'Settings', icon: SettingsIcon },
 ]
 
 export default function BottomNav() {
-  const { isAdmin } = useAuth()
-
   return (
     <nav
       className="fixed bottom-0 left-0 right-0 z-40"
@@ -43,20 +41,6 @@ export default function BottomNav() {
             )}
           </NavLink>
         ))}
-        {isAdmin && (
-          <NavLink
-            to="/admin"
-            className={({ isActive }) => `flex-1 flex flex-col items-center justify-center gap-1 py-3 transition-all`}
-            style={({ isActive }) => ({ color: isActive ? '#c9a99a' : '#b09d8a' })}
-          >
-            {({ isActive }) => (
-              <>
-                <ShieldIcon size={22} active={isActive} />
-                <span style={{ fontSize: 10, fontWeight: isActive ? 600 : 400 }}>Admin</span>
-              </>
-            )}
-          </NavLink>
-        )}
       </div>
     </nav>
   )
@@ -105,11 +89,12 @@ function DocumentIcon({ size, active }) {
   )
 }
 
-function ShieldIcon({ size, active }) {
+function SettingsIcon({ size, active }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill={active ? 'currentColor' : 'none'}
       stroke="currentColor" strokeWidth={1.75} strokeLinecap="round" strokeLinejoin="round">
-      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
     </svg>
   )
 }

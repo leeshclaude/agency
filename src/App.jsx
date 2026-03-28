@@ -18,6 +18,7 @@ import HomePage from './pages/HomePage'
 import ChatPage from './pages/ChatPage'
 import SessionsPage from './pages/SessionsPage'
 import RateCardPage from './pages/RateCardPage'
+import SettingsPage from './pages/SettingsPage'
 
 // Admin
 import AdminPage from './pages/admin/AdminPage'
@@ -110,6 +111,7 @@ function RouterGuard() {
                   <Route path="/chat" element={<ChatPage />} />
                   <Route path="/sessions" element={<SessionsPage />} />
                   <Route path="/rate-card" element={<RateCardPage />} />
+                  <Route path="/settings" element={<SettingsPage />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </AppShell>

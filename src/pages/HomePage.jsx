@@ -21,7 +21,7 @@ const CATEGORY_ICONS = {
 }
 
 export default function HomePage() {
-  const { profile, isAdmin, signOut } = useAuth()
+  const { profile, isAdmin } = useAuth()
   const [announcement, setAnnouncement] = useState(null)
   const [resources, setResources] = useState([])
   const [activeCategory, setActiveCategory] = useState('All')
@@ -184,13 +184,6 @@ export default function HomePage() {
           ))}
         </div>
       )}
-
-      {/* Sign out */}
-      <div className="mt-10 text-center">
-        <button onClick={signOut} className="btn-ghost text-sm">
-          Sign out
-        </button>
-      </div>
 
       {/* Add/Edit Resource Modal */}
       {showAddResource && (
