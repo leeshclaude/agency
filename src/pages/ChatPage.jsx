@@ -4,10 +4,10 @@ import { useAuth } from '../contexts/AuthContext'
 import Avatar from '../components/ui/Avatar'
 
 const CHANNELS = [
+  { id: 'general', label: 'General', emoji: '💬' },
   { id: 'intros', label: "Intro's", emoji: '✨' },
   { id: 'engagement', label: 'Engagement', emoji: '💕' },
   { id: 'brand-ops', label: 'Brand Ops', emoji: '💸' },
-  { id: 'general', label: 'General', emoji: '💬' },
 ]
 
 export default function ChatPage() {
@@ -37,10 +37,16 @@ export default function ChatPage() {
         { event: '*', schema: 'public', table: 'messages' },
         (payload) => {
           if (payload.eventType === 'INSERT') {
-            // Only add to state if it belongs to the currently viewed channel
             if (payload.new.channel === activeChannelRef.current) {
               fetchNewMessage(payload.new.id)
             }
+          } else if (payload.eventType === 'UPDATE') {
+            // Update is_pinned in real time for all users
+            setMessages((prev) =>
+              prev.map((m) =>
+                m.id === payload.new.id ? { ...m, is_pinned: payload.new.is_pinned } : m
+              )
+            )
           } else if (payload.eventType === 'DELETE') {
             setMessages((prev) => prev.filter((m) => m.id !== payload.old.id))
           }
@@ -61,8 +67,8 @@ export default function ChatPage() {
     const { data } = await supabase
       .from('messages')
       .select(`
-        id, content, created_at, user_id, channel,
-        profiles:user_id (full_name, instagram_handle, avatar_url)
+        id, content, created_at, user_id, channel, is_pinned,
+        profiles:user_id (full_name, instagram_handle, avatar_url, is_admin)
       `)
       .eq('channel', ch)
       .order('created_at', { ascending: true })
@@ -76,8 +82,8 @@ export default function ChatPage() {
     const { data } = await supabase
       .from('messages')
       .select(`
-        id, content, created_at, user_id, channel,
-        profiles:user_id (full_name, instagram_handle, avatar_url)
+        id, content, created_at, user_id, channel, is_pinned,
+        profiles:user_id (full_name, instagram_handle, avatar_url, is_admin)
       `)
       .eq('id', id)
       .single()
@@ -111,9 +117,26 @@ export default function ChatPage() {
     await supabase.from('messages').delete().eq('id', id)
   }
 
-  function switchChannel(ch) {
-    setActiveChannel(ch)
-    setInput('')
+  async function pinMessage(id) {
+    // Unpin current pinned message in this channel first
+    await supabase
+      .from('messages')
+      .update({ is_pinned: false })
+      .eq('channel', activeChannel)
+      .eq('is_pinned', true)
+    // Pin selected message
+    await supabase.from('messages').update({ is_pinned: true }).eq('id', id)
+    // Update local state immediately
+    setMessages((prev) => prev.map((m) => ({ ...m, is_pinned: m.id === id })))
+  }
+
+  async function unpinMessage() {
+    await supabase
+      .from('messages')
+      .update({ is_pinned: false })
+      .eq('channel', activeChannel)
+      .eq('is_pinned', true)
+    setMessages((prev) => prev.map((m) => ({ ...m, is_pinned: false })))
   }
 
   // Group consecutive messages from the same sender
@@ -127,13 +150,12 @@ export default function ChatPage() {
     }
   }
 
+  const pinnedMessage = messages.find((m) => m.is_pinned)
   const activeChannelData = CHANNELS.find((c) => c.id === activeChannel)
 
   return (
-    <div
-      className="flex flex-col"
-      style={{ height: '100svh', background: '#faf8f6' }}
-    >
+    <div className="flex flex-col" style={{ height: '100svh', background: '#faf8f6' }}>
+
       {/* Header */}
       <div
         className="flex-shrink-0 pt-12 pb-0"
@@ -145,16 +167,13 @@ export default function ChatPage() {
         </div>
 
         {/* Channel tabs */}
-        <div
-          className="flex"
-          style={{ scrollbarWidth: 'none' }}
-        >
+        <div className="flex">
           {CHANNELS.map((ch) => {
             const isActive = ch.id === activeChannel
             return (
               <button
                 key={ch.id}
-                onClick={() => switchChannel(ch.id)}
+                onClick={() => { setActiveChannel(ch.id); setInput('') }}
                 className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-sm font-medium transition-all"
                 style={{
                   color: isActive ? '#c9a99a' : '#b09d8a',
@@ -170,6 +189,33 @@ export default function ChatPage() {
           })}
         </div>
       </div>
+
+      {/* Pinned message banner */}
+      {pinnedMessage && (
+        <div
+          className="flex-shrink-0 flex items-center gap-3 px-4 py-2.5"
+          style={{ background: '#fdf6f3', borderBottom: '1px solid #ece4dc' }}
+        >
+          <span style={{ fontSize: 14, flexShrink: 0 }}>📌</span>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-semibold mb-0.5" style={{ color: '#b09d8a' }}>
+              {pinnedMessage.profiles?.full_name}
+            </p>
+            <p className="text-xs truncate" style={{ color: '#4e4238' }}>
+              {pinnedMessage.content}
+            </p>
+          </div>
+          {isAdmin && (
+            <button
+              onClick={unpinMessage}
+              className="flex-shrink-0 text-xs px-2 py-1 rounded-lg"
+              style={{ color: '#b09d8a', background: '#ece4dc' }}
+            >
+              Unpin
+            </button>
+          )}
+        </div>
+      )}
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-4 py-4">
@@ -193,26 +239,41 @@ export default function ChatPage() {
               const name = firstMsg.profiles?.full_name || 'Unknown'
               const handle = firstMsg.profiles?.instagram_handle || ''
               const avatarUrl = firstMsg.profiles?.avatar_url || null
+              const senderIsAdmin = firstMsg.profiles?.is_admin === true
 
               return (
-                <div key={gi} className={`flex gap-2 ${isOwn ? 'flex-row-reverse' : 'flex-row'} items-end`}>
+                <div
+                  key={gi}
+                  className={`flex gap-2 ${isOwn ? 'flex-row-reverse' : 'flex-row'} items-end`}
+                >
+                  {/* Avatar — others only */}
                   {!isOwn && (
                     <div className="flex-shrink-0">
                       <Avatar avatarUrl={avatarUrl} name={name} size={32} />
                     </div>
                   )}
 
-                  <div className={`flex flex-col gap-1 max-w-xs ${isOwn ? 'items-end' : 'items-start'}`}>
+                  {/* Bubble column */}
+                  <div className={`flex flex-col gap-1 ${isOwn ? 'items-end' : 'items-start'}`}>
+                    {/* Name + admin badge */}
                     {!isOwn && (
-                      <div className="flex items-baseline gap-1.5 px-1 mb-0.5">
+                      <div className="flex items-center gap-1.5 px-1 mb-0.5 flex-wrap">
                         <span className="text-xs font-semibold" style={{ color: '#4e4238' }}>{name}</span>
+                        {senderIsAdmin && (
+                          <span
+                            className="text-xs px-1.5 py-0.5 rounded-full font-medium"
+                            style={{ background: '#edd5cc', color: '#8e7a68', fontSize: 10 }}
+                          >
+                            Admin
+                          </span>
+                        )}
                         <span className="text-xs" style={{ color: '#b09d8a' }}>{handle}</span>
                       </div>
                     )}
 
                     {group.messages.map((msg, mi) => {
-                      const isLast = mi === group.messages.length - 1
                       const isFirst = mi === 0
+                      const isLast = mi === group.messages.length - 1
                       const canDelete = isOwn || isAdmin
 
                       return (
@@ -223,11 +284,14 @@ export default function ChatPage() {
                           isFirst={isFirst}
                           isLast={isLast}
                           canDelete={canDelete}
+                          canPin={isAdmin}
                           onDelete={() => deleteMessage(msg.id)}
+                          onPin={() => pinMessage(msg.id)}
                         />
                       )
                     })}
 
+                    {/* Timestamp */}
                     <span className="text-xs px-1" style={{ color: '#b09d8a' }}>
                       {new Date(group.messages[group.messages.length - 1].created_at).toLocaleTimeString('en-AU', {
                         hour: 'numeric',
@@ -279,14 +343,14 @@ export default function ChatPage() {
   )
 }
 
-function MessageBubble({ message, isOwn, isFirst, isLast, canDelete, onDelete }) {
-  const [showDelete, setShowDelete] = useState(false)
+function MessageBubble({ message, isOwn, isFirst, isLast, canDelete, canPin, onDelete, onPin }) {
+  const [showActions, setShowActions] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const longPressTimer = useRef(null)
 
   function handleTouchStart() {
-    if (!canDelete) return
-    longPressTimer.current = setTimeout(() => setShowDelete(true), 500)
+    if (!canDelete && !canPin) return
+    longPressTimer.current = setTimeout(() => setShowActions(true), 500)
   }
 
   function handleTouchEnd() {
@@ -296,7 +360,7 @@ function MessageBubble({ message, isOwn, isFirst, isLast, canDelete, onDelete })
   function handleDelete() {
     if (confirmDelete) {
       onDelete()
-      setShowDelete(false)
+      setShowActions(false)
       setConfirmDelete(false)
     } else {
       setConfirmDelete(true)
@@ -304,53 +368,71 @@ function MessageBubble({ message, isOwn, isFirst, isLast, canDelete, onDelete })
   }
 
   const radius = 18
-  const sharpCorner = 5
+  const sharp = 5
   const ownStyle = {
     background: '#c9a99a',
     color: '#fff',
     borderTopLeftRadius: radius,
-    borderTopRightRadius: isFirst ? radius : sharpCorner,
-    borderBottomRightRadius: isLast ? sharpCorner : sharpCorner,
+    borderTopRightRadius: isFirst ? radius : sharp,
+    borderBottomRightRadius: isLast ? sharp : sharp,
     borderBottomLeftRadius: radius,
   }
   const otherStyle = {
     background: '#fff',
     color: '#302820',
     border: '1px solid #ece4dc',
-    borderTopLeftRadius: isFirst ? radius : sharpCorner,
+    borderTopLeftRadius: isFirst ? radius : sharp,
     borderTopRightRadius: radius,
     borderBottomRightRadius: radius,
-    borderBottomLeftRadius: isLast ? sharpCorner : sharpCorner,
+    borderBottomLeftRadius: isLast ? sharp : sharp,
   }
 
   return (
-    <div className="relative">
+    <div
+      className="flex items-center gap-2"
+      onMouseEnter={() => (canDelete || canPin) && setShowActions(true)}
+      onMouseLeave={() => { setShowActions(false); setConfirmDelete(false) }}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      onTouchMove={handleTouchEnd}
+    >
+      {/* Bubble */}
       <div
-        className={`flex items-center gap-2 ${isOwn ? 'flex-row-reverse' : 'flex-row'}`}
-        onMouseEnter={() => canDelete && setShowDelete(true)}
-        onMouseLeave={() => { setShowDelete(false); setConfirmDelete(false) }}
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-        onTouchMove={handleTouchEnd}
+        className="px-3.5 py-2 text-sm leading-relaxed"
+        style={isOwn ? ownStyle : otherStyle}
       >
-        <div
-          className="px-3.5 py-2 text-sm leading-relaxed"
-          style={isOwn ? ownStyle : otherStyle}
-        >
-          {message.content}
-        </div>
-
-        {showDelete && (
-          <button
-            onClick={handleDelete}
-            onTouchEnd={(e) => { e.preventDefault(); handleDelete() }}
-            className="flex-shrink-0 text-xs px-2 py-1 rounded-lg"
-            style={{ background: confirmDelete ? '#dc2626' : '#fee2e2', color: confirmDelete ? '#fff' : '#dc2626' }}
-          >
-            {confirmDelete ? 'Sure?' : '✕'}
-          </button>
-        )}
+        {message.content}
       </div>
+
+      {/* Action buttons — always to the right of the bubble */}
+      {showActions && (
+        <div className="flex items-center gap-1 flex-shrink-0">
+          {canPin && (
+            <button
+              onClick={onPin}
+              onTouchEnd={(e) => { e.preventDefault(); onPin(); setShowActions(false) }}
+              className="text-xs px-2 py-1 rounded-lg"
+              style={{ background: '#f5f0ec', color: '#8e7a68' }}
+              title="Pin message"
+            >
+              📌
+            </button>
+          )}
+          {canDelete && (
+            <button
+              onClick={handleDelete}
+              onTouchEnd={(e) => { e.preventDefault(); handleDelete() }}
+              className="text-xs px-2 py-1 rounded-lg"
+              style={{
+                background: confirmDelete ? '#dc2626' : '#fee2e2',
+                color: confirmDelete ? '#fff' : '#dc2626',
+              }}
+            >
+              {confirmDelete ? 'Sure?' : '✕'}
+            </button>
+          )}
+        </div>
+      )}
     </div>
   )
 }

@@ -246,6 +246,7 @@ create table if not exists public.messages (
   user_id uuid references public.profiles(id) on delete cascade not null,
   content text not null,
   channel text not null default 'general',
+  is_pinned boolean not null default false,
   created_at timestamptz not null default now()
 );
 
@@ -286,6 +287,11 @@ create policy "Admins can delete any message"
       where p.id = auth.uid() and p.is_admin = true
     )
   );
+
+-- Admins can update messages (for pinning)
+create policy "Admins can update messages"
+  on public.messages for update
+  using (public.is_admin());
 
 -- ============================================================
 -- RATE CARDS
