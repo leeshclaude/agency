@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import AvatarUpload from '../components/ui/AvatarUpload'
 
 const CATEGORIES = [
   'All',
@@ -67,14 +68,17 @@ export default function HomePage() {
   return (
     <div className="page-container">
       {/* Greeting */}
-      <div className="mb-6">
-        <p className="section-label mb-1">Welcome back</p>
-        <h1 className="text-2xl font-semibold" style={{ color: '#302820' }}>
-          Hey, {firstName} 👋
-        </h1>
-        <p className="text-sm mt-1" style={{ color: '#8e7a68' }}>
-          {profile?.instagram_handle}
-        </p>
+      <div className="mb-6 flex items-center gap-4">
+        <AvatarUpload size={64} />
+        <div>
+          <p className="section-label mb-1">Welcome back</p>
+          <h1 className="text-2xl font-semibold" style={{ color: '#302820' }}>
+            Hey, {firstName} 👋
+          </h1>
+          <p className="text-sm mt-0.5" style={{ color: '#8e7a68' }}>
+            {profile?.instagram_handle}
+          </p>
+        </div>
       </div>
 
       {/* Announcement banner */}

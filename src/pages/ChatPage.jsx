@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
+import Avatar from '../components/ui/Avatar'
 
 export default function ChatPage() {
   const { profile, isAdmin } = useAuth()
@@ -48,7 +49,7 @@ export default function ChatPage() {
       .from('messages')
       .select(`
         id, content, created_at, user_id,
-        profiles:user_id (full_name, instagram_handle)
+        profiles:user_id (full_name, instagram_handle, avatar_url)
       `)
       .order('created_at', { ascending: true })
       .limit(200)
@@ -62,7 +63,7 @@ export default function ChatPage() {
       .from('messages')
       .select(`
         id, content, created_at, user_id,
-        profiles:user_id (full_name, instagram_handle)
+        profiles:user_id (full_name, instagram_handle, avatar_url)
       `)
       .eq('id', id)
       .single()
@@ -183,6 +184,7 @@ function MessageBubble({ message, isOwn, isAdmin, onDelete }) {
 
   const name = message.profiles?.full_name || 'Unknown'
   const handle = message.profiles?.instagram_handle || ''
+  const avatarUrl = message.profiles?.avatar_url || null
   const time = new Date(message.created_at).toLocaleTimeString('en-AU', {
     hour: 'numeric',
     minute: '2-digit',
@@ -190,10 +192,16 @@ function MessageBubble({ message, isOwn, isAdmin, onDelete }) {
 
   return (
     <div
-      className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'}`}
+      className={`flex ${isOwn ? 'flex-col items-end' : 'flex-row items-end gap-2'}`}
       onMouseEnter={() => setShowDelete(true)}
       onMouseLeave={() => { setShowDelete(false); setConfirmDelete(false) }}
     >
+      {!isOwn && (
+        <div className="flex-shrink-0 mb-1">
+          <Avatar avatarUrl={avatarUrl} name={name} size={32} />
+        </div>
+      )}
+      <div className={`flex flex-col ${isOwn ? 'items-end' : 'items-start'}`}>
       {!isOwn && (
         <div className="flex items-baseline gap-1.5 mb-1 px-1">
           <span className="text-xs font-semibold" style={{ color: '#4e4238' }}>{name}</span>
@@ -237,6 +245,7 @@ function MessageBubble({ message, isOwn, isAdmin, onDelete }) {
         )}
       </div>
       <span className="text-xs mt-1 px-1" style={{ color: '#b09d8a' }}>{time}</span>
+      </div>
     </div>
   )
 }
