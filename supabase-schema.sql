@@ -54,6 +54,20 @@ create policy "Admins can read all profiles"
   on public.profiles for select
   using (public.is_admin());
 
+-- Helper function to check if current user is approved (avoids RLS recursion)
+create or replace function public.is_approved()
+returns boolean language sql security definer stable as $$
+  select coalesce(
+    (select status = 'approved' from public.profiles where id = auth.uid()),
+    false
+  )
+$$;
+
+-- Approved members can read each other's profiles (needed for chat names/avatars)
+create policy "Approved members can read approved profiles"
+  on public.profiles for select
+  using (status = 'approved' and public.is_approved());
+
 -- Admins can update any profile (for approval/denial)
 create policy "Admins can update any profile"
   on public.profiles for update
