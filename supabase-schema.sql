@@ -245,6 +245,7 @@ create table if not exists public.messages (
   id uuid primary key default uuid_generate_v4(),
   user_id uuid references public.profiles(id) on delete cascade not null,
   content text not null,
+  channel text not null default 'general',
   created_at timestamptz not null default now()
 );
 

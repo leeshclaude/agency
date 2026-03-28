@@ -3,18 +3,33 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import Avatar from '../components/ui/Avatar'
 
+const CHANNELS = [
+  { id: 'intros', label: "Intro's", emoji: '✨' },
+  { id: 'engagement', label: 'Engagement', emoji: '💕' },
+  { id: 'brand-ops', label: 'Brand Ops', emoji: '💸' },
+  { id: 'general', label: 'General', emoji: '💬' },
+]
+
 export default function ChatPage() {
   const { profile, isAdmin } = useAuth()
+  const [activeChannel, setActiveChannel] = useState('general')
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
+  const activeChannelRef = useRef(activeChannel)
 
   useEffect(() => {
-    fetchMessages()
+    activeChannelRef.current = activeChannel
+  }, [activeChannel])
 
+  useEffect(() => {
+    fetchMessages(activeChannel)
+  }, [activeChannel])
+
+  useEffect(() => {
     const channel = supabase
       .channel('public:messages')
       .on(
@@ -22,7 +37,10 @@ export default function ChatPage() {
         { event: '*', schema: 'public', table: 'messages' },
         (payload) => {
           if (payload.eventType === 'INSERT') {
-            fetchNewMessage(payload.new.id)
+            // Only add to state if it belongs to the currently viewed channel
+            if (payload.new.channel === activeChannelRef.current) {
+              fetchNewMessage(payload.new.id)
+            }
           } else if (payload.eventType === 'DELETE') {
             setMessages((prev) => prev.filter((m) => m.id !== payload.old.id))
           }
@@ -37,14 +55,16 @@ export default function ChatPage() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  async function fetchMessages() {
+  async function fetchMessages(ch) {
     setLoading(true)
+    setMessages([])
     const { data } = await supabase
       .from('messages')
       .select(`
-        id, content, created_at, user_id,
+        id, content, created_at, user_id, channel,
         profiles:user_id (full_name, instagram_handle, avatar_url)
       `)
+      .eq('channel', ch)
       .order('created_at', { ascending: true })
       .limit(200)
 
@@ -56,7 +76,7 @@ export default function ChatPage() {
     const { data } = await supabase
       .from('messages')
       .select(`
-        id, content, created_at, user_id,
+        id, content, created_at, user_id, channel,
         profiles:user_id (full_name, instagram_handle, avatar_url)
       `)
       .eq('id', id)
@@ -79,6 +99,7 @@ export default function ChatPage() {
     const { error } = await supabase.from('messages').insert({
       user_id: profile.id,
       content: text,
+      channel: activeChannel,
     })
 
     if (error) setInput(text)
@@ -88,6 +109,11 @@ export default function ChatPage() {
 
   async function deleteMessage(id) {
     await supabase.from('messages').delete().eq('id', id)
+  }
+
+  function switchChannel(ch) {
+    setActiveChannel(ch)
+    setInput('')
   }
 
   // Group consecutive messages from the same sender
@@ -101,6 +127,8 @@ export default function ChatPage() {
     }
   }
 
+  const activeChannelData = CHANNELS.find((c) => c.id === activeChannel)
+
   return (
     <div
       className="flex flex-col"
@@ -108,12 +136,38 @@ export default function ChatPage() {
     >
       {/* Header */}
       <div
-        className="flex-shrink-0 px-4 pt-12 pb-4"
+        className="flex-shrink-0 pt-12 pb-0"
         style={{ background: '#fff', borderBottom: '1px solid #ece4dc' }}
       >
-        <div className="max-w-lg mx-auto">
+        <div className="max-w-lg mx-auto px-4 pb-3">
           <p className="section-label mb-0.5">Community</p>
           <h1 className="text-lg font-semibold" style={{ color: '#302820' }}>Group Chat</h1>
+        </div>
+
+        {/* Channel tabs */}
+        <div
+          className="flex overflow-x-auto"
+          style={{ scrollbarWidth: 'none', gap: 0 }}
+        >
+          {CHANNELS.map((ch) => {
+            const isActive = ch.id === activeChannel
+            return (
+              <button
+                key={ch.id}
+                onClick={() => switchChannel(ch.id)}
+                className="flex-shrink-0 flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium transition-all"
+                style={{
+                  color: isActive ? '#c9a99a' : '#b09d8a',
+                  borderBottom: isActive ? '2px solid #c9a99a' : '2px solid transparent',
+                  background: 'transparent',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                <span>{ch.emoji}</span>
+                <span>{ch.label}</span>
+              </button>
+            )
+          })}
         </div>
       </div>
 
@@ -121,11 +175,16 @@ export default function ChatPage() {
       <div className="flex-1 overflow-y-auto px-4 py-4">
         <div className="max-w-lg mx-auto space-y-4">
           {loading ? (
-            <div className="text-center py-12" style={{ color: '#b09d8a' }}>Loading messages…</div>
+            <div className="text-center py-12" style={{ color: '#b09d8a' }}>Loading…</div>
           ) : messages.length === 0 ? (
             <div className="text-center py-16">
-              <span style={{ fontSize: 32 }}>💬</span>
-              <p className="mt-3 text-sm" style={{ color: '#b09d8a' }}>No messages yet. Say hello!</p>
+              <span style={{ fontSize: 32 }}>{activeChannelData?.emoji}</span>
+              <p className="mt-3 text-sm font-medium" style={{ color: '#4e4238' }}>
+                {activeChannelData?.label}
+              </p>
+              <p className="mt-1 text-sm" style={{ color: '#b09d8a' }}>
+                No messages yet. Be the first to post!
+              </p>
             </div>
           ) : (
             groups.map((group, gi) => {
@@ -137,16 +196,13 @@ export default function ChatPage() {
 
               return (
                 <div key={gi} className={`flex gap-2 ${isOwn ? 'flex-row-reverse' : 'flex-row'} items-end`}>
-                  {/* Avatar — shown once per group, aligned to bottom */}
                   {!isOwn && (
                     <div className="flex-shrink-0">
                       <Avatar avatarUrl={avatarUrl} name={name} size={32} />
                     </div>
                   )}
 
-                  {/* Bubble column */}
                   <div className={`flex flex-col gap-1 max-w-xs ${isOwn ? 'items-end' : 'items-start'}`}>
-                    {/* Name + handle — shown once per group */}
                     {!isOwn && (
                       <div className="flex items-baseline gap-1.5 px-1 mb-0.5">
                         <span className="text-xs font-semibold" style={{ color: '#4e4238' }}>{name}</span>
@@ -172,7 +228,6 @@ export default function ChatPage() {
                       )
                     })}
 
-                    {/* Timestamp under last bubble */}
                     <span className="text-xs px-1" style={{ color: '#b09d8a' }}>
                       {new Date(group.messages[group.messages.length - 1].created_at).toLocaleTimeString('en-AU', {
                         hour: 'numeric',
@@ -203,7 +258,7 @@ export default function ChatPage() {
             className="input-field flex-1"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Say something…"
+            placeholder={`Message ${activeChannelData?.emoji} ${activeChannelData?.label}…`}
             autoComplete="off"
             style={{ paddingTop: 10, paddingBottom: 10 }}
           />
@@ -229,12 +284,9 @@ function MessageBubble({ message, isOwn, isFirst, isLast, canDelete, onDelete })
   const [confirmDelete, setConfirmDelete] = useState(false)
   const longPressTimer = useRef(null)
 
-  // Long press to reveal delete on mobile
   function handleTouchStart() {
     if (!canDelete) return
-    longPressTimer.current = setTimeout(() => {
-      setShowDelete(true)
-    }, 500)
+    longPressTimer.current = setTimeout(() => setShowDelete(true), 500)
   }
 
   function handleTouchEnd() {
@@ -251,7 +303,6 @@ function MessageBubble({ message, isOwn, isFirst, isLast, canDelete, onDelete })
     }
   }
 
-  // Bubble shape: round except the corner connecting to the group
   const radius = 18
   const sharpCorner = 5
   const ownStyle = {
