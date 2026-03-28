@@ -146,8 +146,8 @@ export default function ChatPage() {
 
         {/* Channel tabs */}
         <div
-          className="flex overflow-x-auto"
-          style={{ scrollbarWidth: 'none', gap: 0 }}
+          className="flex"
+          style={{ scrollbarWidth: 'none' }}
         >
           {CHANNELS.map((ch) => {
             const isActive = ch.id === activeChannel
@@ -155,7 +155,7 @@ export default function ChatPage() {
               <button
                 key={ch.id}
                 onClick={() => switchChannel(ch.id)}
-                className="flex-shrink-0 flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium transition-all"
+                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-sm font-medium transition-all"
                 style={{
                   color: isActive ? '#c9a99a' : '#b09d8a',
                   borderBottom: isActive ? '2px solid #c9a99a' : '2px solid transparent',
