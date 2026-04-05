@@ -17,15 +17,15 @@ const STEPS = ['Your Details', 'Location', 'Account']
 
 function RequiredLabel({ children }) {
   return (
-    <label className="block text-sm font-medium mb-1.5" style={{ color: '#4e4238' }}>
-      {children} <span style={{ color: '#e53e3e' }}>*</span>
+    <label className="section-label block mb-2">
+      {children} <span style={{ color: '#D4688A' }}>*</span>
     </label>
   )
 }
 
 function FieldError({ message }) {
   if (!message) return null
-  return <p className="text-xs mt-1" style={{ color: '#e53e3e' }}>{message}</p>
+  return <p className="text-xs mt-1" style={{ fontFamily: 'DM Sans, sans-serif', color: '#8C3A55' }}>{message}</p>
 }
 
 export default function SignUpPage() {
@@ -143,15 +143,20 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: '#faf8f6' }}>
+    <div className="min-h-screen flex flex-col" style={{ background: '#FEF9FB' }}>
       {/* Header */}
-      <div className="px-6 pt-14 pb-8 text-center">
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl mb-4"
-          style={{ background: '#edd5cc' }}>
-          <span style={{ fontSize: 20 }}>🌸</span>
+      <div className="px-6 pt-16 pb-8 text-center">
+        <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-5"
+          style={{ background: '#FAE8EF' }}>
+          <span style={{ fontSize: 24 }}>🌸</span>
         </div>
-        <h1 className="text-2xl font-semibold" style={{ color: '#302820' }}>The Mama Edit</h1>
-        <p className="mt-1 text-sm" style={{ color: '#8e7a68' }}>Join our private community</p>
+        <h1
+          className="text-2xl mb-1"
+          style={{ fontFamily: 'Josefin Sans, sans-serif', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#2C1A22' }}
+        >
+          The Mama Edit
+        </h1>
+        <p className="text-sm" style={{ fontFamily: 'DM Sans, sans-serif', color: '#6B4A57' }}>Join our private community</p>
       </div>
 
       {/* Step indicator */}
@@ -163,18 +168,19 @@ export default function SignUpPage() {
                 <div
                   className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-semibold transition-all"
                   style={{
-                    background: i <= step ? '#c9a99a' : '#ece4dc',
-                    color: i <= step ? '#fff' : '#b09d8a',
+                    background: i <= step ? '#D4688A' : '#FAE8EF',
+                    color: i <= step ? '#fff' : '#6B4A57',
+                    fontFamily: 'Josefin Sans, sans-serif',
                   }}
                 >
                   {i < step ? '✓' : i + 1}
                 </div>
-                <span className="text-xs" style={{ color: i === step ? '#302820' : '#b09d8a' }}>
+                <span className="text-xs" style={{ fontFamily: 'DM Sans, sans-serif', color: i === step ? '#2C1A22' : '#6B4A57' }}>
                   {label}
                 </span>
               </div>
               {i < STEPS.length - 1 && (
-                <div className="flex-1 h-px" style={{ background: '#ece4dc' }} />
+                <div className="flex-1 h-px" style={{ background: '#FAE8EF' }} />
               )}
             </div>
           ))}
@@ -196,7 +202,7 @@ export default function SignUpPage() {
                   value={form.full_name}
                   onChange={set('full_name')}
                   autoComplete="name"
-                  style={fieldErrors.full_name ? { borderColor: '#e53e3e' } : {}}
+                  style={fieldErrors.full_name ? { borderColor: '#8C3A55' } : {}}
                 />
                 <FieldError message={fieldErrors.full_name} />
               </div>
@@ -210,7 +216,7 @@ export default function SignUpPage() {
                   onChange={set('instagram_handle')}
                   autoComplete="off"
                   autoCapitalize="none"
-                  style={fieldErrors.instagram_handle ? { borderColor: '#e53e3e' } : {}}
+                  style={fieldErrors.instagram_handle ? { borderColor: '#8C3A55' } : {}}
                 />
                 <FieldError message={fieldErrors.instagram_handle} />
               </div>
@@ -223,7 +229,7 @@ export default function SignUpPage() {
                   min="0"
                   value={form.instagram_followers}
                   onChange={set('instagram_followers')}
-                  style={fieldErrors.instagram_followers ? { borderColor: '#e53e3e' } : {}}
+                  style={fieldErrors.instagram_followers ? { borderColor: '#8C3A55' } : {}}
                 />
                 <FieldError message={fieldErrors.instagram_followers} />
               </div>
@@ -238,7 +244,7 @@ export default function SignUpPage() {
                   className="input-field"
                   value={form.location_state}
                   onChange={set('location_state')}
-                  style={fieldErrors.location_state ? { borderColor: '#e53e3e' } : {}}
+                  style={fieldErrors.location_state ? { borderColor: '#8C3A55' } : {}}
                 >
                   <option value="">Select your state</option>
                   {AUSTRALIAN_STATES.map((s) => (
@@ -255,13 +261,13 @@ export default function SignUpPage() {
                   placeholder="e.g. Sydney"
                   value={form.location_city}
                   onChange={set('location_city')}
-                  style={fieldErrors.location_city ? { borderColor: '#e53e3e' } : {}}
+                  style={fieldErrors.location_city ? { borderColor: '#8C3A55' } : {}}
                 />
                 <FieldError message={fieldErrors.location_city} />
               </div>
               <div className="card p-4 flex gap-3">
                 <span className="text-lg">🇦🇺</span>
-                <p className="text-sm" style={{ color: '#6e5e4f' }}>
+                <p className="text-sm" style={{ fontFamily: 'DM Sans, sans-serif', color: '#6B4A57' }}>
                   This is an Australia-only community. Only Australian creators are eligible to join.
                 </p>
               </div>
@@ -280,7 +286,7 @@ export default function SignUpPage() {
                   onChange={set('email')}
                   autoComplete="email"
                   autoCapitalize="none"
-                  style={fieldErrors.email ? { borderColor: '#e53e3e' } : {}}
+                  style={fieldErrors.email ? { borderColor: '#8C3A55' } : {}}
                 />
                 <FieldError message={fieldErrors.email} />
               </div>
@@ -293,7 +299,7 @@ export default function SignUpPage() {
                   value={form.password}
                   onChange={set('password')}
                   autoComplete="new-password"
-                  style={fieldErrors.password ? { borderColor: '#e53e3e' } : {}}
+                  style={fieldErrors.password ? { borderColor: '#8C3A55' } : {}}
                 />
                 <FieldError message={fieldErrors.password} />
               </div>
@@ -306,7 +312,7 @@ export default function SignUpPage() {
                   value={form.confirm_password}
                   onChange={set('confirm_password')}
                   autoComplete="new-password"
-                  style={fieldErrors.confirm_password ? { borderColor: '#e53e3e' } : {}}
+                  style={fieldErrors.confirm_password ? { borderColor: '#8C3A55' } : {}}
                 />
                 <FieldError message={fieldErrors.confirm_password} />
               </div>
@@ -314,7 +320,7 @@ export default function SignUpPage() {
           )}
 
           {serverError && (
-            <p className="text-sm" style={{ color: '#e53e3e' }}>{serverError}</p>
+            <p className="text-sm" style={{ fontFamily: 'DM Sans, sans-serif', color: '#8C3A55' }}>{serverError}</p>
           )}
 
           <div className="flex gap-3 pt-2">
@@ -335,9 +341,9 @@ export default function SignUpPage() {
           </div>
         </form>
 
-        <p className="text-center text-sm mt-6 pb-8" style={{ color: '#8e7a68' }}>
+        <p className="text-center text-sm mt-8 pb-8" style={{ fontFamily: 'DM Sans, sans-serif', color: '#6B4A57' }}>
           Already have an account?{' '}
-          <Link to="/login" className="font-medium" style={{ color: '#c9a99a' }}>
+          <Link to="/login" className="font-medium" style={{ color: '#D4688A' }}>
             Sign in
           </Link>
         </p>

@@ -29,35 +29,53 @@ export default function ResetPasswordPage() {
 
   if (done) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center"
-        style={{ background: '#faf8f6' }}>
-        <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5"
-          style={{ background: '#d1fae5' }}>
+      <div
+        className="min-h-screen flex flex-col items-center justify-center px-6 text-center"
+        style={{ background: '#FEF9FB' }}
+      >
+        <div
+          className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5"
+          style={{ background: '#FAE8EF' }}
+        >
           <span style={{ fontSize: 26 }}>✓</span>
         </div>
-        <h1 className="text-xl font-semibold mb-2" style={{ color: '#302820' }}>Password updated</h1>
-        <p className="text-sm" style={{ color: '#8e7a68' }}>Taking you back to the app…</p>
+        <h1
+          className="text-xl mb-2"
+          style={{ fontFamily: 'Josefin Sans, sans-serif', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#2C1A22' }}
+        >
+          Password updated
+        </h1>
+        <p className="text-sm" style={{ fontFamily: 'DM Sans, sans-serif', color: '#6B4A57' }}>
+          Taking you back to the app…
+        </p>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: '#faf8f6' }}>
-      <div className="px-6 pt-14 pb-10 text-center">
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl mb-4"
-          style={{ background: '#edd5cc' }}>
-          <span style={{ fontSize: 20 }}>🔑</span>
+    <div className="min-h-screen flex flex-col" style={{ background: '#FEF9FB' }}>
+      <div className="px-6 pt-16 pb-10 text-center">
+        <div
+          className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-5"
+          style={{ background: '#FAE8EF' }}
+        >
+          <span style={{ fontSize: 24 }}>🔑</span>
         </div>
-        <h1 className="text-2xl font-semibold" style={{ color: '#302820' }}>Set new password</h1>
-        <p className="mt-1 text-sm" style={{ color: '#8e7a68' }}>Choose a new password for your account</p>
+        <h1
+          className="text-2xl mb-1"
+          style={{ fontFamily: 'Josefin Sans, sans-serif', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#2C1A22' }}
+        >
+          Set new password
+        </h1>
+        <p className="text-sm" style={{ fontFamily: 'DM Sans, sans-serif', color: '#6B4A57' }}>
+          Choose a new password for your account
+        </p>
       </div>
 
       <div className="flex-1 px-6">
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-sm font-medium mb-1.5" style={{ color: '#4e4238' }}>
-              New password
-            </label>
+            <label className="section-label block mb-2">New password</label>
             <input
               className="input-field"
               type="password"
@@ -69,9 +87,7 @@ export default function ResetPasswordPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1.5" style={{ color: '#4e4238' }}>
-              Confirm password
-            </label>
+            <label className="section-label block mb-2">Confirm password</label>
             <input
               className="input-field"
               type="password"
@@ -83,7 +99,7 @@ export default function ResetPasswordPage() {
           </div>
 
           {error && (
-            <div className="rounded-xl px-4 py-3 text-sm" style={{ background: '#fef2f2', color: '#991b1b' }}>
+            <div className="rounded-xl px-4 py-3 text-sm" style={{ background: '#FAE8EF', color: '#8C3A55', fontFamily: 'DM Sans, sans-serif' }}>
               {error}
             </div>
           )}

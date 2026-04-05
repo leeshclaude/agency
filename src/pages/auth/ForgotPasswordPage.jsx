@@ -31,17 +31,29 @@ export default function ForgotPasswordPage() {
 
   if (sent) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-6 text-center"
-        style={{ background: '#faf8f6' }}>
-        <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5"
-          style={{ background: '#edd5cc' }}>
+      <div
+        className="min-h-screen flex flex-col items-center justify-center px-6 text-center"
+        style={{ background: '#FEF9FB' }}
+      >
+        <div
+          className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5"
+          style={{ background: '#FAE8EF' }}
+        >
           <span style={{ fontSize: 26 }}>📬</span>
         </div>
-        <h1 className="text-xl font-semibold mb-2" style={{ color: '#302820' }}>Check your inbox</h1>
-        <p className="text-sm mb-6" style={{ color: '#8e7a68', maxWidth: 300 }}>
+        <h1
+          className="text-xl mb-2"
+          style={{ fontFamily: 'Josefin Sans, sans-serif', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#2C1A22' }}
+        >
+          Check your inbox
+        </h1>
+        <p className="text-sm mb-6" style={{ fontFamily: 'DM Sans, sans-serif', color: '#6B4A57', maxWidth: 300 }}>
           We've sent a password reset link to <strong>{email}</strong>. Check your inbox and spam folder.
         </p>
-        <Link to="/login" className="text-sm font-medium" style={{ color: '#c9a99a' }}>
+        <Link
+          to="/login"
+          style={{ fontFamily: 'Josefin Sans, sans-serif', fontWeight: 700, fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#D4688A' }}
+        >
           Back to sign in
         </Link>
       </div>
@@ -49,24 +61,29 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: '#faf8f6' }}>
-      <div className="px-6 pt-14 pb-10 text-center">
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl mb-4"
-          style={{ background: '#edd5cc' }}>
-          <span style={{ fontSize: 20 }}>🔑</span>
+    <div className="min-h-screen flex flex-col" style={{ background: '#FEF9FB' }}>
+      <div className="px-6 pt-16 pb-10 text-center">
+        <div
+          className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-5"
+          style={{ background: '#FAE8EF' }}
+        >
+          <span style={{ fontSize: 24 }}>🔑</span>
         </div>
-        <h1 className="text-2xl font-semibold" style={{ color: '#302820' }}>Forgot password?</h1>
-        <p className="mt-1 text-sm" style={{ color: '#8e7a68' }}>
+        <h1
+          className="text-2xl mb-1"
+          style={{ fontFamily: 'Josefin Sans, sans-serif', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#2C1A22' }}
+        >
+          Forgot password?
+        </h1>
+        <p className="text-sm" style={{ fontFamily: 'DM Sans, sans-serif', color: '#6B4A57' }}>
           Enter your email and we'll send you a reset link
         </p>
       </div>
 
       <div className="flex-1 px-6">
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="block text-sm font-medium mb-1.5" style={{ color: '#4e4238' }}>
-              Email address
-            </label>
+            <label className="section-label block mb-2">Email address</label>
             <input
               className="input-field"
               type="email"
@@ -80,7 +97,7 @@ export default function ForgotPasswordPage() {
           </div>
 
           {error && (
-            <div className="rounded-xl px-4 py-3 text-sm" style={{ background: '#fef2f2', color: '#991b1b' }}>
+            <div className="rounded-xl px-4 py-3 text-sm" style={{ background: '#FAE8EF', color: '#8C3A55', fontFamily: 'DM Sans, sans-serif' }}>
               {error}
             </div>
           )}
@@ -90,9 +107,9 @@ export default function ForgotPasswordPage() {
           </button>
         </form>
 
-        <p className="text-center text-sm mt-6" style={{ color: '#8e7a68' }}>
+        <p className="text-center text-sm mt-8" style={{ fontFamily: 'DM Sans, sans-serif', color: '#6B4A57' }}>
           Remember it?{' '}
-          <Link to="/login" className="font-medium" style={{ color: '#c9a99a' }}>
+          <Link to="/login" className="font-medium" style={{ color: '#D4688A' }}>
             Back to sign in
           </Link>
         </p>
