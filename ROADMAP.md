@@ -39,8 +39,8 @@
 - [x] Rate card: add "Other" niche option with free-text write-in field (supports multiple custom niches)
 - [x] Rate card: PDF visual redesign — branded header, stat cards, compact demographics table, pricing table with rose accents, green/red collab prefs, polished footer
 - [x] Security hardening — blocked is_admin/status self-escalation via DB trigger, added auth token verification to API endpoints, HTML-escaped email templates, protected meeting links at DB level via sessions_safe view
-- [ ] Home feed: announcements support image and file attachments
-- [ ] Home feed: resource cards support image and file attachments
+- [x] Home feed: announcements support image and file attachments — image shown full-width in banner, file as download link; admin upload UI in edit mode
+- [x] Home feed: resource cards support image and file attachments — image at top of card, file as download link; admin upload in resource modal
 - [ ] Replace placeholder app icons with real branding (192×192 and 512×512 PNG) — files exist in public/icons/, need real artwork
 - [ ] Rename "The Mama Edit" to final community name throughout the app
 - [ ] Set a custom domain name in Vercel
