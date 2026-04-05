@@ -979,6 +979,25 @@ function MessageBubble({ message, isOwn, isFirst, isLast, canDelete, canPin, onD
   const [showActions, setShowActions] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const longPressTimer = useRef(null)
+  const wrapperRef = useRef(null)
+
+  // Close picker when clicking outside
+  useEffect(() => {
+    if (!showActions) return
+    function handleClickOutside(e) {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+        setShowActions(false)
+        setConfirmDelete(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [showActions])
+
+  function handleBubbleClick() {
+    setShowActions((v) => !v)
+    if (showActions) setConfirmDelete(false)
+  }
 
   function handleTouchStart() {
     longPressTimer.current = setTimeout(() => setShowActions(true), 500)
@@ -1029,9 +1048,9 @@ function MessageBubble({ message, isOwn, isFirst, isLast, canDelete, canPin, onD
 
   return (
     <div
+      ref={wrapperRef}
       style={{ position: 'relative', display: 'inline-block', maxWidth: '100%' }}
-      onMouseEnter={() => setShowActions(true)}
-      onMouseLeave={() => { setShowActions(false); setConfirmDelete(false) }}
+      onClick={handleBubbleClick}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
       onTouchMove={handleTouchEnd}
