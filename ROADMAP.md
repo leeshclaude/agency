@@ -42,7 +42,7 @@
 - [x] Home feed: announcements support image and file attachments — image shown full-width in banner, file as download link; admin upload UI in edit mode
 - [x] Home feed: resource cards support image and file attachments — image at top of card, file as download link; admin upload in resource modal
 - [x] Replace placeholder app icons with real branding — cherry blossom flower icon in rose palette, 192×192 and 512×512 PNG; also used as browser favicon and iPhone home screen icon
-- [ ] Rename "The Mama Edit" to final community name throughout the app
+- [x] Community name confirmed as "The Mama Edit" — already used throughout app, no changes needed
 - [ ] Set a custom domain name in Vercel
 - [ ] Test end-to-end member signup and approval flow with real members
 
