@@ -10,12 +10,12 @@ export default function Avatar({ avatarUrl, name, size = 40 }) {
         height: size,
         borderRadius: '50%',
         overflow: 'hidden',
-        background: '#edd5cc',
+        background: '#FAE8EF',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         flexShrink: 0,
-        border: '2px solid #fff',
+        border: '2px solid #FEF9FB',
       }}
     >
       {avatarUrl ? (
@@ -25,7 +25,7 @@ export default function Avatar({ avatarUrl, name, size = 40 }) {
           style={{ width: '100%', height: '100%', objectFit: 'cover' }}
         />
       ) : (
-        <span style={{ fontSize: size * 0.36, fontWeight: 600, color: '#8e7a68' }}>
+        <span style={{ fontSize: size * 0.36, fontFamily: 'DM Sans, sans-serif', fontWeight: 600, color: '#6B4A57' }}>
           {initials}
         </span>
       )}
