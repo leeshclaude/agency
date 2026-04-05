@@ -20,13 +20,19 @@ export default function ChatPage() {
   const [loading, setLoading] = useState(false)
   const [sending, setSending] = useState(false)
   const [unreadCounts, setUnreadCounts] = useState({})
+  const [dmUnread, setDmUnread] = useState(0)
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
   const activeChannelRef = useRef(activeChannel)
+  const modeRef = useRef(mode)
 
   useEffect(() => {
     activeChannelRef.current = activeChannel
   }, [activeChannel])
+
+  useEffect(() => {
+    modeRef.current = mode
+  }, [mode])
 
   useEffect(() => {
     if (activeChannel) fetchMessages(activeChannel)
@@ -35,6 +41,7 @@ export default function ChatPage() {
   useEffect(() => {
     loadUnreadCounts()
     fetchChannelPreviews()
+    fetchDmUnread()
   }, [])
 
   useEffect(() => {
@@ -97,6 +104,21 @@ export default function ChatPage() {
       })
       .subscribe()
     return () => supabase.removeChannel(reactChannel)
+  }, [])
+
+  // Realtime: DM badge
+  useEffect(() => {
+    const dmChannel = supabase
+      .channel('admin_dms:badge')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'admin_dms' }, (payload) => {
+        if (modeRef.current === 'dm') return
+        const isFromMember = payload.new.sender_id !== profile.id
+        if (!isFromMember) return
+        if (!isAdmin && payload.new.member_id !== profile.id) return
+        setDmUnread((n) => n + 1)
+      })
+      .subscribe()
+    return () => supabase.removeChannel(dmChannel)
   }, [])
 
   useEffect(() => {
@@ -195,6 +217,18 @@ export default function ChatPage() {
       { user_id: profile.id, channel: channelId, last_read_at: new Date().toISOString() },
       { onConflict: 'user_id,channel' }
     )
+  }
+
+  async function fetchDmUnread() {
+    const lastRead = localStorage.getItem(`dm_last_read_${profile.id}`) || profile.created_at || '1970-01-01T00:00:00Z'
+    let query = supabase
+      .from('admin_dms')
+      .select('*', { count: 'exact', head: true })
+      .neq('sender_id', profile.id)
+      .gt('created_at', lastRead)
+    if (!isAdmin) query = query.eq('member_id', profile.id)
+    const { count } = await query
+    setDmUnread(count || 0)
   }
 
   function openChannel(channelId) {
@@ -303,6 +337,7 @@ export default function ChatPage() {
 
   const showModeToggle = !activeChannel || mode === 'dm'
   const showBackArrow = mode === 'community' && activeChannel !== null
+  const totalGroupUnread = Object.values(unreadCounts).reduce((a, b) => a + b, 0)
 
   return (
     <div className="flex flex-col" style={{ height: '100svh', background: '#faf8f6' }}>
@@ -339,23 +374,43 @@ export default function ChatPage() {
             >
               <button
                 onClick={() => { setMode('community'); setActiveChannel(null); setMessages([]) }}
-                className="px-3 py-1.5 text-xs font-medium transition-all"
+                className="px-3 py-1.5 text-xs font-medium transition-all flex items-center gap-1"
                 style={{
                   background: mode === 'community' ? '#c9a99a' : '#fff',
                   color: mode === 'community' ? '#fff' : '#8e7a68',
                 }}
               >
                 💬 Group
+                {totalGroupUnread > 0 && mode !== 'community' && (
+                  <span
+                    className="inline-flex items-center justify-center rounded-full font-semibold"
+                    style={{ background: '#c9a99a', color: '#fff', fontSize: 9, minWidth: 14, height: 14, padding: '0 3px' }}
+                  >
+                    {totalGroupUnread > 9 ? '9+' : totalGroupUnread}
+                  </span>
+                )}
               </button>
               <button
-                onClick={() => setMode('dm')}
-                className="px-3 py-1.5 text-xs font-medium transition-all"
+                onClick={() => {
+                  setMode('dm')
+                  setDmUnread(0)
+                  localStorage.setItem(`dm_last_read_${profile.id}`, new Date().toISOString())
+                }}
+                className="px-3 py-1.5 text-xs font-medium transition-all flex items-center gap-1"
                 style={{
                   background: mode === 'dm' ? '#c9a99a' : '#fff',
                   color: mode === 'dm' ? '#fff' : '#8e7a68',
                 }}
               >
                 💌 Admin
+                {dmUnread > 0 && mode !== 'dm' && (
+                  <span
+                    className="inline-flex items-center justify-center rounded-full font-semibold"
+                    style={{ background: '#c9a99a', color: '#fff', fontSize: 9, minWidth: 14, height: 14, padding: '0 3px' }}
+                  >
+                    {dmUnread > 9 ? '9+' : dmUnread}
+                  </span>
+                )}
               </button>
             </div>
           )}
