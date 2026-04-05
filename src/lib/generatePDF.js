@@ -19,6 +19,25 @@ function getSuggestedRate(followers) {
   return { min: 1200, max: null }
 }
 
+const CONTENT_TYPE_MULTIPLIERS = {
+  reels:            1.0,
+  static_post:      0.6,
+  carousel:         0.75,
+  stories:          0.5,
+  highlights:       0.4,
+  ugc_video:        1.25,
+  ugc_photo:        0.75,
+  commercial_usage: 1.5,
+}
+
+function getSuggestedRateForType(followers, typeKey) {
+  const base = getSuggestedRate(followers)
+  const m = CONTENT_TYPE_MULTIPLIERS[typeKey] ?? 1.0
+  const min = Math.round(base.min * m / 5) * 5
+  const max = base.max ? Math.round(base.max * m / 5) * 5 : null
+  return { min, max }
+}
+
 export function generateRateCardPDF(form) {
   const doc = new jsPDF({ unit: 'mm', format: 'a4' })
 
@@ -216,15 +235,16 @@ export function generateRateCardPDF(form) {
   doc.text('CONTENT & PRICING  (AUD, excl. GST)', MARGIN, y)
   y += 2
 
-  const suggested = getSuggestedRate(parseInt(form.follower_count || 0))
+  const followers = parseInt(form.follower_count || 0)
   const selectedTypes = form.content_types || []
 
   selectedTypes.forEach((key, i) => {
     const label = CONTENT_TYPE_LABELS[key] || key
     const rate = form.custom_rates?.[key]
+    const s = getSuggestedRateForType(followers, key)
     const rateStr = rate
       ? `$${parseFloat(rate).toLocaleString()}`
-      : `$${suggested.min}${suggested.max ? `–$${suggested.max}` : '+'}`
+      : `$${s.min}${s.max ? `–$${s.max}` : '+'}`
 
     const rowY = y + 8 + i * 10
 
@@ -268,9 +288,6 @@ export function generateRateCardPDF(form) {
     ['Paid partnerships', form.open_to_paid ? 'Yes' : 'No'],
     ['Ongoing ambassador roles', form.open_to_ambassador ? 'Yes' : 'No'],
     ['Whitelisting / content boosting', whitelistLabels[form.open_to_whitelisting] || '—'],
-    ...(form.excluded_categories
-      ? [["Won't work with", form.excluded_categories]]
-      : []),
   ]
 
   prefs.forEach(([label, value], i) => {

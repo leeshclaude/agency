@@ -26,6 +26,26 @@ function getSuggestedRate(followers) {
   return { min: 1200, max: null, label: '50k+ followers' }
 }
 
+// Per-content-type rate multipliers applied on top of the base follower rate
+const CONTENT_TYPE_MULTIPLIERS = {
+  reels:            1.0,
+  static_post:      0.6,
+  carousel:         0.75,
+  stories:          0.5,
+  highlights:       0.4,
+  ugc_video:        1.25,
+  ugc_photo:        0.75,
+  commercial_usage: 1.5,
+}
+
+function getSuggestedRateForType(followers, typeKey) {
+  const base = getSuggestedRate(followers)
+  const m = CONTENT_TYPE_MULTIPLIERS[typeKey] ?? 1.0
+  const min = Math.round(base.min * m / 5) * 5
+  const max = base.max ? Math.round(base.max * m / 5) * 5 : null
+  return { min, max }
+}
+
 const INITIAL_FORM = {
   // Step 1
   name: '',
@@ -809,17 +829,6 @@ function Step3({ form, setField, showTooltip, setShowTooltip }) {
         />
       </div>
 
-      <div>
-        <label className="block text-sm font-medium mb-1.5" style={{ color: '#4e4238' }}>
-          Categories you won't work with (optional)
-        </label>
-        <input
-          className="input-field"
-          value={form.excluded_categories}
-          onChange={(e) => setField('excluded_categories', e.target.value)}
-          placeholder="e.g. alcohol, gambling, MLM"
-        />
-      </div>
     </>
   )
 }
@@ -828,7 +837,8 @@ function Step3({ form, setField, showTooltip, setShowTooltip }) {
 // Step 4: Pricing
 // ─────────────────────────────────────────────────
 function Step4({ form, setRate }) {
-  const suggested = getSuggestedRate(parseInt(form.follower_count) || 0)
+  const followers = parseInt(form.follower_count) || 0
+  const baseSuggested = getSuggestedRate(followers)
   const selectedTypes = CONTENT_TYPES.filter((t) => form.content_types.includes(t.key))
 
   return (
@@ -841,41 +851,41 @@ function Step4({ form, setRate }) {
           Suggested starting rates
         </p>
         <p className="text-sm" style={{ color: '#6e5e4f' }}>
-          Based on your following ({suggested.label}):
-        </p>
-        <p className="text-base font-semibold mt-2" style={{ color: '#302820' }}>
-          ${suggested.min}{suggested.max ? `–$${suggested.max}` : '+'} per deliverable
-        </p>
-        <p className="text-xs mt-2" style={{ color: '#8e7a68' }}>
-          These are starting points. You know your value best — adjust freely.
+          Based on your following ({baseSuggested.label}). Each content type has its own suggested rate — adjust freely.
         </p>
       </div>
 
       <div className="space-y-3">
-        {selectedTypes.map(({ key, label }) => (
-          <div key={key}>
-            <label className="block text-sm font-medium mb-1.5" style={{ color: '#4e4238' }}>
-              {label}
-            </label>
-            <div className="relative">
-              <span
-                className="absolute left-4 top-1/2 -translate-y-1/2 font-medium"
-                style={{ color: '#b09d8a' }}
-              >
-                $
-              </span>
-              <input
-                className="input-field"
-                type="number"
-                min="0"
-                value={form.custom_rates[key] || ''}
-                onChange={(e) => setRate(key, e.target.value)}
-                placeholder={`${suggested.min}–${suggested.max || '1200+'}`}
-                style={{ paddingLeft: 28 }}
-              />
+        {selectedTypes.map(({ key, label }) => {
+          const s = getSuggestedRateForType(followers, key)
+          return (
+            <div key={key}>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-sm font-medium" style={{ color: '#4e4238' }}>{label}</label>
+                <span className="text-xs" style={{ color: '#b09d8a' }}>
+                  suggested ${s.min}{s.max ? `–$${s.max}` : '+'}
+                </span>
+              </div>
+              <div className="relative">
+                <span
+                  className="absolute left-4 top-1/2 -translate-y-1/2 font-medium"
+                  style={{ color: '#b09d8a' }}
+                >
+                  $
+                </span>
+                <input
+                  className="input-field"
+                  type="number"
+                  min="0"
+                  value={form.custom_rates[key] || ''}
+                  onChange={(e) => setRate(key, e.target.value)}
+                  placeholder={`${s.min}`}
+                  style={{ paddingLeft: 28 }}
+                />
+              </div>
             </div>
-          </div>
-        ))}
+          )
+        })}
       </div>
     </>
   )
@@ -1033,9 +1043,6 @@ function Step5({ form }) {
               <PrefRow label="Paid partnerships" value={form.open_to_paid ? 'Yes' : 'No'} />
               <PrefRow label="Ambassador roles" value={form.open_to_ambassador ? 'Yes' : 'No'} />
               <PrefRow label="Whitelisting" value={whitelistLabels[form.open_to_whitelisting]} />
-              {form.excluded_categories && (
-                <PrefRow label="Won't work with" value={form.excluded_categories} />
-              )}
             </div>
           </div>
 
