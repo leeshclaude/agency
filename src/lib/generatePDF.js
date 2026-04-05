@@ -52,42 +52,35 @@ export function generateRateCardPDF(form) {
   const ROSE_BG    = [253, 246, 243]
   const DARK       = [48, 40, 32]
   const MID        = [110, 94, 79]
-  const LIGHT      = [176, 157, 138]
+  const LIGHT      = [160, 140, 122]
   const BG         = [250, 248, 246]
-  const BORDER     = [230, 220, 212]
-  const GREEN      = [100, 150, 90]
-  const RED_SOFT   = [190, 90, 75]
+  const BORDER     = [228, 218, 208]
+  const GREEN      = [90, 145, 80]
+  const RED_SOFT   = [185, 85, 70]
   const WHITE      = [255, 255, 255]
 
   let y = 0
 
   // ── HEADER BLOCK ─────────────────────────────
-  // Main rose block
   doc.setFillColor(...ROSE)
-  doc.rect(0, 0, W, 54, 'F')
-  // Darker top accent strip
+  doc.rect(0, 0, W, 48, 'F')
   doc.setFillColor(...ROSE_DARK)
-  doc.rect(0, 0, W, 5, 'F')
-  // Bottom fade strip
+  doc.rect(0, 0, W, 4, 'F')
   doc.setFillColor(...ROSE_LIGHT)
-  doc.rect(0, 49, W, 5, 'F')
+  doc.rect(0, 44, W, 4, 'F')
 
-  // Brand label — top left
+  // Brand labels
   doc.setFontSize(7.5)
   doc.setTextColor(...WHITE)
   doc.setFont('helvetica', 'normal')
-  doc.text('MEDIA RATE CARD', MARGIN, 13)
-
-  // Brand label — top right
-  doc.setFontSize(7.5)
-  doc.setTextColor(...WHITE)
-  doc.text('The Mama Edit', W - MARGIN, 13, { align: 'right' })
+  doc.text('MEDIA RATE CARD', MARGIN, 12)
+  doc.text('The Mama Edit', W - MARGIN, 12, { align: 'right' })
 
   // Creator name
-  doc.setFontSize(28)
+  doc.setFontSize(26)
   doc.setTextColor(...WHITE)
   doc.setFont('helvetica', 'bold')
-  doc.text(form.name, MARGIN, 31)
+  doc.text(form.name, MARGIN, 27)
 
   // Handle
   const handle = form.instagram_handle.startsWith('@')
@@ -96,7 +89,7 @@ export function generateRateCardPDF(form) {
   doc.setFontSize(11)
   doc.setFont('helvetica', 'normal')
   doc.setTextColor(...WHITE)
-  doc.text(handle, MARGIN, 40)
+  doc.text(handle, MARGIN, 36)
 
   // Niche tags
   const nicheArr = Array.isArray(form.niche) ? [...form.niche] : (form.niche ? [form.niche] : [])
@@ -106,12 +99,12 @@ export function generateRateCardPDF(form) {
   if (nicheText) {
     doc.setFontSize(8)
     doc.setTextColor(...WHITE)
-    doc.text(nicheText, MARGIN, 48)
+    doc.text(nicheText, MARGIN, 43)
   }
 
-  y = 62
+  y = 55
 
-  // ── Helper: section header with rose left bar ─
+  // ── Helpers ───────────────────────────────────
   function sectionHeader(title, subtitle) {
     doc.setFillColor(...ROSE)
     doc.rect(MARGIN, y, 3, 5.5, 'F')
@@ -125,26 +118,29 @@ export function generateRateCardPDF(form) {
       doc.setTextColor(...LIGHT)
       doc.text(subtitle, W - MARGIN, y + 4.5, { align: 'right' })
     }
-    y += 9
+    y += 8
   }
 
-  // ── Helper: draw a stat card ──────────────────
-  function statCard(x, cardY, w, h, label, value) {
+  // Stat card: label bold+dark, value large+bold
+  const CARD_H = 15
+  const GAP = 3
+
+  function statCard(x, cardY, w, label, value) {
     doc.setFillColor(...ROSE_BG)
-    doc.roundedRect(x, cardY, w, h, 2, 2, 'F')
+    doc.roundedRect(x, cardY, w, CARD_H, 2, 2, 'F')
     doc.setDrawColor(...BORDER)
     doc.setLineWidth(0.25)
-    doc.roundedRect(x, cardY, w, h, 2, 2, 'S')
-    // Label
-    doc.setFontSize(7)
-    doc.setTextColor(...LIGHT)
-    doc.setFont('helvetica', 'normal')
-    doc.text(label, x + 4, cardY + 6)
-    // Value
-    doc.setFontSize(12)
+    doc.roundedRect(x, cardY, w, CARD_H, 2, 2, 'S')
+    // Label — darker and bolder
+    doc.setFontSize(7.5)
+    doc.setTextColor(...MID)
+    doc.setFont('helvetica', 'bold')
+    doc.text(label, x + 4, cardY + 5.5)
+    // Value — large bold dark
+    doc.setFontSize(13)
     doc.setTextColor(...DARK)
     doc.setFont('helvetica', 'bold')
-    doc.text(String(value), x + 4, cardY + 13.5)
+    doc.text(String(value), x + 4, cardY + 12.5)
   }
 
   // ── AUDIENCE OVERVIEW ─────────────────────────
@@ -172,8 +168,6 @@ export function generateRateCardPDF(form) {
   ].filter(Boolean)
 
   const COLS = 3
-  const GAP = 3
-  const CARD_H = 17
   const cardW = (CONTENT_W - GAP * (COLS - 1)) / COLS
 
   keyStats.forEach(({ label, value }, i) => {
@@ -181,43 +175,41 @@ export function generateRateCardPDF(form) {
     const row = Math.floor(i / COLS)
     const cx = MARGIN + col * (cardW + GAP)
     const cy = y + row * (CARD_H + GAP)
-    statCard(cx, cy, cardW, CARD_H, label, value)
+    statCard(cx, cy, cardW, label, value)
   })
 
-  y += Math.ceil(keyStats.length / COLS) * (CARD_H + GAP) + 2
+  y += Math.ceil(keyStats.length / COLS) * (CARD_H + GAP) + 1
 
-  // ── AUDIENCE DEMOGRAPHICS ─────────────────────
+  // ── AUDIENCE DEMOGRAPHICS (compact) ───────────
   const hasDemoSection =
     form.audience_female_pct || form.audience_male_pct ||
     form.top_country ||
     form.content_mix_reels_pct || form.content_mix_stories_pct || form.content_mix_posts_pct
 
   if (hasDemoSection) {
-    y += 4
+    y += 5
     sectionHeader('AUDIENCE DEMOGRAPHICS')
 
-    const demoItems = []
+    // Build compact rows: label on left, value on right
+    const demoRows = []
 
     if (form.audience_female_pct || form.audience_male_pct) {
-      const genderParts = [
+      const parts = [
         form.audience_female_pct && `${form.audience_female_pct}% Female`,
         form.audience_male_pct && `${form.audience_male_pct}% Male`,
       ].filter(Boolean)
-      demoItems.push({ label: 'Gender Split', value: genderParts.join('  /  ') })
+      demoRows.push({ label: 'Gender Split', value: parts.join('  /  ') })
     }
 
+    // All countries in one row
     const countries = [
-      form.top_country && { name: form.top_country, pct: form.top_country_pct },
-      form.country_2 && { name: form.country_2, pct: form.country_2_pct },
-      form.country_3 && { name: form.country_3, pct: form.country_3_pct },
+      form.top_country && `${form.top_country}${form.top_country_pct ? ` (${form.top_country_pct}%)` : ''}`,
+      form.country_2 && `${form.country_2}${form.country_2_pct ? ` (${form.country_2_pct}%)` : ''}`,
+      form.country_3 && `${form.country_3}${form.country_3_pct ? ` (${form.country_3_pct}%)` : ''}`,
     ].filter(Boolean)
-
-    countries.forEach((c, i) => {
-      demoItems.push({
-        label: i === 0 ? 'Top Audience Country' : `#${i + 1} Country`,
-        value: c.pct ? `${c.name}  (${c.pct}%)` : c.name,
-      })
-    })
+    if (countries.length > 0) {
+      demoRows.push({ label: 'Top Countries', value: countries.join('  ·  ') })
+    }
 
     const hasMix = form.content_mix_reels_pct || form.content_mix_stories_pct || form.content_mix_posts_pct
     if (hasMix) {
@@ -226,21 +218,34 @@ export function generateRateCardPDF(form) {
         form.content_mix_stories_pct && `Stories ${form.content_mix_stories_pct}%`,
         form.content_mix_posts_pct && `Posts ${form.content_mix_posts_pct}%`,
       ].filter(Boolean)
-      demoItems.push({ label: 'Content Mix', value: mixParts.join('  ·  ') })
+      demoRows.push({ label: 'Content Mix', value: mixParts.join('  ·  ') })
     }
 
-    const DEMO_COLS = 2
-    const demoCW = (CONTENT_W - GAP * (DEMO_COLS - 1)) / DEMO_COLS
-
-    demoItems.forEach(({ label, value }, i) => {
-      const col = i % DEMO_COLS
-      const row = Math.floor(i / DEMO_COLS)
-      const cx = MARGIN + col * (demoCW + GAP)
-      const cy = y + row * (CARD_H + GAP)
-      statCard(cx, cy, demoCW, CARD_H, label, value)
+    const ROW_H = 8
+    demoRows.forEach(({ label, value }, i) => {
+      const rowY = y + i * ROW_H
+      if (i % 2 === 0) {
+        doc.setFillColor(...BG)
+        doc.rect(MARGIN, rowY, CONTENT_W, ROW_H, 'F')
+      }
+      // Label
+      doc.setFontSize(8)
+      doc.setTextColor(...MID)
+      doc.setFont('helvetica', 'bold')
+      doc.text(label, MARGIN + 4, rowY + 5.5)
+      // Value
+      doc.setFontSize(8.5)
+      doc.setTextColor(...DARK)
+      doc.setFont('helvetica', 'normal')
+      doc.text(value, W - MARGIN - 4, rowY + 5.5, { align: 'right' })
     })
 
-    y += Math.ceil(demoItems.length / DEMO_COLS) * (CARD_H + GAP) + 2
+    // Border under demographics
+    doc.setDrawColor(...BORDER)
+    doc.setLineWidth(0.25)
+    doc.rect(MARGIN, y, CONTENT_W, demoRows.length * ROW_H, 'S')
+
+    y += demoRows.length * ROW_H + 2
   }
 
   y += 6
@@ -254,7 +259,7 @@ export function generateRateCardPDF(form) {
   // Table header row
   doc.setFillColor(...ROSE)
   doc.rect(MARGIN, y, CONTENT_W, 8, 'F')
-  doc.setFontSize(8)
+  doc.setFontSize(8.5)
   doc.setTextColor(...WHITE)
   doc.setFont('helvetica', 'bold')
   doc.text('Content Type', MARGIN + 5, y + 5.5)
@@ -269,36 +274,32 @@ export function generateRateCardPDF(form) {
       ? `$${parseFloat(rate).toLocaleString()}`
       : `$${s.min.toLocaleString()}${s.max ? ` – $${s.max.toLocaleString()}` : '+'}`
 
-    const ROW_H = 9
+    const ROW_H = 8.5
     const rowY = y + i * ROW_H
 
-    // Alternating background
     if (i % 2 === 0) {
       doc.setFillColor(...BG)
       doc.rect(MARGIN, rowY, CONTENT_W, ROW_H, 'F')
     }
-
-    // Left rose accent line on each row
     doc.setFillColor(...ROSE_LIGHT)
     doc.rect(MARGIN, rowY, 1.5, ROW_H, 'F')
 
     doc.setFontSize(9.5)
     doc.setTextColor(...DARK)
     doc.setFont('helvetica', 'normal')
-    doc.text(label, MARGIN + 6, rowY + 6)
+    doc.text(label, MARGIN + 6, rowY + 5.8)
 
     doc.setFont('helvetica', 'bold')
     doc.setTextColor(...ROSE_DARK)
-    doc.text(rateStr, W - MARGIN - 5, rowY + 6, { align: 'right' })
+    doc.text(rateStr, W - MARGIN - 5, rowY + 5.8, { align: 'right' })
   })
 
-  y += selectedTypes.length * 9
+  y += selectedTypes.length * 8.5
 
-  // Table bottom border
   doc.setDrawColor(...BORDER)
   doc.setLineWidth(0.3)
   doc.line(MARGIN, y, W - MARGIN, y)
-  y += 8
+  y += 7
 
   // ── COLLABORATION PREFERENCES ─────────────────
   sectionHeader('COLLABORATION PREFERENCES')
@@ -339,7 +340,11 @@ export function generateRateCardPDF(form) {
     doc.text(value, W - MARGIN - 5, rowY + 5.5, { align: 'right' })
   })
 
-  y += prefs.length * 8 + 4
+  // Border under prefs
+  doc.setDrawColor(...BORDER)
+  doc.setLineWidth(0.25)
+  const prefsH = prefs.length * 8
+  doc.rect(MARGIN, y, CONTENT_W, prefsH, 'S')
 
   // ── FOOTER ────────────────────────────────────
   const footerY = 284
