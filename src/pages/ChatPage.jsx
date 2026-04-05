@@ -224,7 +224,7 @@ export default function ChatPage() {
           <div>
             <p className="section-label mb-0.5">Community</p>
             <h1 className="text-lg font-semibold" style={{ color: '#302820' }}>
-              {mode === 'community' ? 'Group Chat' : 'Message Admin'}
+              {mode === 'community' ? 'Group Chat' : isAdmin ? 'DM Inbox' : 'Message Admin'}
             </h1>
           </div>
           {/* Mode toggle */}
@@ -298,7 +298,7 @@ export default function ChatPage() {
 
       {/* DM Admin mode */}
       {mode === 'dm' && (
-        <DMAdminThread profile={profile} />
+        isAdmin ? <AdminDMInbox adminProfile={profile} /> : <DMAdminThread profile={profile} />
       )}
 
       {/* Community mode */}
@@ -465,6 +465,216 @@ export default function ChatPage() {
       </div>
 
       </>}
+    </div>
+  )
+}
+
+// ─────────────────────────────────────────────────
+// Admin DM Inbox (shown to admin only)
+// ─────────────────────────────────────────────────
+function AdminDMInbox({ adminProfile }) {
+  const [conversations, setConversations] = useState([])
+  const [activeMember, setActiveMember] = useState(null)
+  const [threadMessages, setThreadMessages] = useState([])
+  const [input, setInput] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [threadLoading, setThreadLoading] = useState(false)
+  const [sending, setSending] = useState(false)
+  const bottomRef = useRef(null)
+
+  useEffect(() => {
+    fetchConversations()
+  }, [])
+
+  useEffect(() => {
+    if (activeMember) fetchThread(activeMember.id)
+  }, [activeMember])
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [threadMessages])
+
+  async function fetchConversations() {
+    setLoading(true)
+    const { data } = await supabase
+      .from('admin_dms')
+      .select('member_id, content, created_at, profiles:member_id(id, full_name, instagram_handle, avatar_url)')
+      .order('created_at', { ascending: false })
+    if (data) {
+      const seen = new Set()
+      const convos = []
+      for (const row of data) {
+        if (!seen.has(row.member_id)) {
+          seen.add(row.member_id)
+          convos.push(row)
+        }
+      }
+      setConversations(convos)
+    }
+    setLoading(false)
+  }
+
+  async function fetchThread(memberId) {
+    setThreadLoading(true)
+    const { data } = await supabase
+      .from('admin_dms')
+      .select('*, sender:sender_id(full_name, avatar_url, is_admin)')
+      .eq('member_id', memberId)
+      .order('created_at', { ascending: true })
+    if (data) setThreadMessages(data)
+    setThreadLoading(false)
+  }
+
+  async function sendReply(e) {
+    e.preventDefault()
+    const text = input.trim()
+    if (!text || sending || !activeMember) return
+    setSending(true)
+    setInput('')
+    await supabase.from('admin_dms').insert({
+      member_id: activeMember.id,
+      sender_id: adminProfile.id,
+      content: text,
+    })
+    await fetchThread(activeMember.id)
+    setSending(false)
+  }
+
+  if (activeMember) {
+    return (
+      <>
+        {/* Thread header */}
+        <div
+          className="flex-shrink-0 flex items-center gap-3 px-4 py-3"
+          style={{ background: '#fff', borderBottom: '1px solid #ece4dc' }}
+        >
+          <button
+            onClick={() => { setActiveMember(null); setThreadMessages([]) }}
+            className="text-sm font-medium flex-shrink-0"
+            style={{ color: '#b09d8a' }}
+          >
+            ←
+          </button>
+          <Avatar avatarUrl={activeMember.avatar_url} name={activeMember.full_name} size={36} />
+          <div className="flex-1 min-w-0">
+            <p className="font-semibold text-sm" style={{ color: '#302820' }}>{activeMember.full_name}</p>
+            <a
+              href={`https://instagram.com/${activeMember.instagram_handle?.replace('@', '')}`}
+              target="_blank" rel="noopener noreferrer"
+              className="text-xs" style={{ color: '#c9a99a' }}
+            >
+              {activeMember.instagram_handle} ↗
+            </a>
+          </div>
+        </div>
+
+        {/* Messages */}
+        <div className="flex-1 overflow-y-auto px-4 py-4">
+          <div className="max-w-lg mx-auto space-y-3">
+            {threadLoading ? (
+              <div className="text-center py-12" style={{ color: '#b09d8a' }}>Loading…</div>
+            ) : threadMessages.map((msg) => {
+              const fromAdmin = msg.sender?.is_admin
+              return (
+                <div key={msg.id} className={`flex gap-2 ${fromAdmin ? 'flex-row-reverse' : 'flex-row'} items-end`}>
+                  {!fromAdmin && (
+                    <Avatar avatarUrl={activeMember.avatar_url} name={activeMember.full_name} size={28} />
+                  )}
+                  <div className={`flex flex-col gap-0.5 ${fromAdmin ? 'items-end' : 'items-start'}`}>
+                    <div
+                      className="px-3.5 py-2.5 text-sm leading-relaxed"
+                      style={{
+                        background: fromAdmin ? '#c9a99a' : '#f5f0ec',
+                        color: fromAdmin ? '#fff' : '#302820',
+                        borderRadius: fromAdmin ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
+                        maxWidth: 260,
+                      }}
+                    >
+                      {msg.content}
+                    </div>
+                    <span className="text-xs px-1" style={{ color: '#b09d8a' }}>
+                      {new Date(msg.created_at).toLocaleTimeString('en-AU', { hour: 'numeric', minute: '2-digit' })}
+                    </span>
+                  </div>
+                </div>
+              )
+            })}
+            <div ref={bottomRef} />
+          </div>
+        </div>
+
+        {/* Reply input */}
+        <div
+          className="flex-shrink-0 px-4 py-3"
+          style={{
+            background: '#fff',
+            borderTop: '1px solid #ece4dc',
+            paddingBottom: 'calc(env(safe-area-inset-bottom) + 80px)',
+          }}
+        >
+          <form onSubmit={sendReply} className="max-w-lg mx-auto flex gap-2">
+            <input
+              className="input-field flex-1"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder={`Reply to ${activeMember.full_name}…`}
+              autoComplete="off"
+              style={{ paddingTop: 10, paddingBottom: 10 }}
+            />
+            <button
+              type="submit"
+              disabled={!input.trim() || sending}
+              className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-all active:scale-95"
+              style={{
+                background: input.trim() ? '#c9a99a' : '#ece4dc',
+                color: input.trim() ? '#fff' : '#b09d8a',
+              }}
+            >
+              <SendIcon />
+            </button>
+          </form>
+        </div>
+      </>
+    )
+  }
+
+  return (
+    <div className="flex-1 overflow-y-auto">
+      {loading ? (
+        <div className="text-center py-12" style={{ color: '#b09d8a' }}>Loading…</div>
+      ) : conversations.length === 0 ? (
+        <div className="text-center py-16">
+          <span style={{ fontSize: 32 }}>💌</span>
+          <p className="mt-3 text-sm" style={{ color: '#b09d8a' }}>No member messages yet</p>
+        </div>
+      ) : (
+        conversations.map((convo) => (
+          <button
+            key={convo.member_id}
+            onClick={() => setActiveMember(convo.profiles)}
+            className="w-full flex items-center gap-3 px-4 py-4 transition-all active:bg-gray-50"
+            style={{ borderBottom: '1px solid #f5f0ec', background: '#fff' }}
+          >
+            <Avatar avatarUrl={convo.profiles?.avatar_url} name={convo.profiles?.full_name} size={48} />
+            <div className="flex-1 min-w-0 text-left">
+              <div className="flex items-center justify-between gap-2">
+                <p className="font-semibold text-sm" style={{ color: '#302820' }}>
+                  {convo.profiles?.full_name}
+                </p>
+                <span className="text-xs flex-shrink-0" style={{ color: '#b09d8a' }}>
+                  {new Date(convo.created_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })}
+                </span>
+              </div>
+              <p className="text-xs mt-0.5" style={{ color: '#8e7a68' }}>
+                {convo.profiles?.instagram_handle}
+              </p>
+              <p className="text-xs truncate mt-1" style={{ color: '#b09d8a' }}>
+                {convo.content}
+              </p>
+            </div>
+          </button>
+        ))
+      )}
     </div>
   )
 }
