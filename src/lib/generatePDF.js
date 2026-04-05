@@ -41,16 +41,33 @@ function getSuggestedRateForType(followers, typeKey) {
 export async function generateRateCardPDF(form, avatarUrl) {
   const doc = new jsPDF({ unit: 'mm', format: 'a4' })
 
-  // Load avatar image if available
-  let avatarDataUrl = null
+  // Load avatar and create circular crop via canvas
+  let circularAvatarDataUrl = null
   if (avatarUrl) {
     try {
       const res = await fetch(avatarUrl)
       const blob = await res.blob()
-      avatarDataUrl = await new Promise((resolve) => {
+      const rawDataUrl = await new Promise((resolve) => {
         const reader = new FileReader()
         reader.onload = () => resolve(reader.result)
         reader.readAsDataURL(blob)
+      })
+      circularAvatarDataUrl = await new Promise((resolve) => {
+        const img = new Image()
+        img.onload = () => {
+          const size = 200
+          const canvas = document.createElement('canvas')
+          canvas.width = size
+          canvas.height = size
+          const ctx = canvas.getContext('2d')
+          ctx.beginPath()
+          ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2)
+          ctx.clip()
+          ctx.drawImage(img, 0, 0, size, size)
+          resolve(canvas.toDataURL('image/png'))
+        }
+        img.onerror = () => resolve(null)
+        img.src = rawDataUrl
       })
     } catch {
       // silently skip — PDF will render without photo
@@ -120,26 +137,16 @@ export async function generateRateCardPDF(form, avatarUrl) {
     doc.text(nicheText, MARGIN, 43)
   }
 
-  // Avatar — circular crop, top-right of header
-  if (avatarDataUrl) {
-    const AV = 26       // diameter mm
-    const ax = W - MARGIN - AV  // left edge of image
-    const ay = 10       // top edge of image
-    const cx = ax + AV / 2
-    const cy = ay + AV / 2
-    const r  = AV / 2
-
-    // Clip to circle then draw image
-    doc.saveGraphicsState()
-    doc.circle(cx, cy, r, null)
-    doc.clip()
-    doc.addImage(avatarDataUrl, 'JPEG', ax, ay, AV, AV, '', 'FAST')
-    doc.restoreGraphicsState()
-
+  // Avatar — circular crop (pre-rendered via canvas), top-right of header
+  if (circularAvatarDataUrl) {
+    const AV = 26
+    const ax = W - MARGIN - AV
+    const ay = 10
+    doc.addImage(circularAvatarDataUrl, 'PNG', ax, ay, AV, AV, '', 'FAST')
     // White ring border
     doc.setDrawColor(...WHITE)
     doc.setLineWidth(1.2)
-    doc.circle(cx, cy, r, 'S')
+    doc.circle(ax + AV / 2, ay + AV / 2, AV / 2, 'S')
   }
 
   y = 55
