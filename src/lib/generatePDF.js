@@ -104,12 +104,21 @@ export function generateRateCardPDF(form) {
   // Instagram stats (only render if any are filled in)
   const statCols = [
     form.avg_interactions && {
-      label: `Avg. Interactions (${form.interactions_period || 30}d)`,
+      label: `Interactions (${form.interactions_period || 30}d)`,
       value: parseInt(form.avg_interactions).toLocaleString(),
     },
-    form.avg_video_views && { label: 'Avg. Video Views', value: parseInt(form.avg_video_views).toLocaleString() },
-    form.avg_profile_visits && { label: 'Profile Visits/mo', value: parseInt(form.avg_profile_visits).toLocaleString() },
-    form.avg_accounts_reached && { label: 'Accounts Reached/mo', value: parseInt(form.avg_accounts_reached).toLocaleString() },
+    form.avg_video_views && {
+      label: `Video Views (${form.interactions_period || 30}d)`,
+      value: parseInt(form.avg_video_views).toLocaleString(),
+    },
+    form.avg_profile_visits && {
+      label: `Profile Visits (${form.interactions_period || 30}d)`,
+      value: parseInt(form.avg_profile_visits).toLocaleString(),
+    },
+    form.avg_accounts_reached && {
+      label: `Accounts Reached (${form.interactions_period || 30}d)`,
+      value: parseInt(form.avg_accounts_reached).toLocaleString(),
+    },
     (form.audience_female_pct || form.audience_male_pct) && {
       label: 'Audience Gender',
       value: [

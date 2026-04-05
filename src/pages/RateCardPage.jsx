@@ -419,56 +419,52 @@ function Step1({ form, setField, toggleNiche }) {
 
       {/* Instagram stats section */}
       <div className="pt-2">
-        <p className="text-sm font-semibold mb-1" style={{ color: '#302820' }}>Instagram Insights (optional)</p>
+        <div className="flex items-start justify-between mb-1">
+          <p className="text-sm font-semibold" style={{ color: '#302820' }}>Instagram Insights (optional)</p>
+          <select
+            className="input-field text-xs"
+            style={{ width: 100, padding: '6px 10px' }}
+            value={form.interactions_period}
+            onChange={(e) => setField('interactions_period', e.target.value)}
+          >
+            <option value="30">30 days</option>
+            <option value="60">60 days</option>
+            <option value="90">90 days</option>
+          </select>
+        </div>
         <p className="text-xs mb-4" style={{ color: '#b09d8a' }}>
-          Find these in your Instagram app under Professional Dashboard → Account Insights. Adding them makes your rate card more compelling to brands.
+          Enter totals from your Instagram Professional Dashboard for the selected time period.
         </p>
         <div className="space-y-4">
 
-          {/* Avg interactions + period dropdown */}
-          <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: '#4e4238' }}>Avg. interactions per post</label>
-            <div className="flex gap-2">
+          <div className="flex gap-3">
+            <div className="flex-1">
+              <label className="block text-xs font-medium mb-1.5" style={{ color: '#4e4238' }}>Interactions</label>
               <input
                 className="input-field"
-                style={{ flex: 1 }}
                 type="number"
                 min="0"
                 value={form.avg_interactions}
                 onChange={(e) => setField('avg_interactions', e.target.value)}
-                placeholder="e.g. 320"
+                placeholder="e.g. 3200"
               />
-              <select
-                className="input-field"
-                style={{ width: 110 }}
-                value={form.interactions_period}
-                onChange={(e) => setField('interactions_period', e.target.value)}
-              >
-                <option value="30">30 days</option>
-                <option value="60">60 days</option>
-                <option value="90">90 days</option>
-              </select>
             </div>
-            <p className="text-xs mt-1" style={{ color: '#b09d8a' }}>
-              Select the time frame from your Professional Dashboard
-            </p>
-          </div>
-
-          <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: '#4e4238' }}>Avg. video views</label>
-            <input
-              className="input-field"
-              type="number"
-              min="0"
-              value={form.avg_video_views}
-              onChange={(e) => setField('avg_video_views', e.target.value)}
-              placeholder="e.g. 4500"
-            />
+            <div className="flex-1">
+              <label className="block text-xs font-medium mb-1.5" style={{ color: '#4e4238' }}>Video views</label>
+              <input
+                className="input-field"
+                type="number"
+                min="0"
+                value={form.avg_video_views}
+                onChange={(e) => setField('avg_video_views', e.target.value)}
+                placeholder="e.g. 45000"
+              />
+            </div>
           </div>
 
           <div className="flex gap-3">
             <div className="flex-1">
-              <label className="block text-xs font-medium mb-1.5" style={{ color: '#4e4238' }}>Avg. profile visits/month</label>
+              <label className="block text-xs font-medium mb-1.5" style={{ color: '#4e4238' }}>Profile visits</label>
               <input
                 className="input-field"
                 type="number"
@@ -479,7 +475,7 @@ function Step1({ form, setField, toggleNiche }) {
               />
             </div>
             <div className="flex-1">
-              <label className="block text-xs font-medium mb-1.5" style={{ color: '#4e4238' }}>Avg. accounts reached/month</label>
+              <label className="block text-xs font-medium mb-1.5" style={{ color: '#4e4238' }}>Accounts reached</label>
               <input
                 className="input-field"
                 type="number"
@@ -963,25 +959,25 @@ function Step5({ form }) {
 
             {form.avg_interactions && (
               <div>
-                <span className="section-label" style={{ fontSize: 10 }}>Avg. Interactions ({form.interactions_period}d)</span>
+                <span className="section-label" style={{ fontSize: 10 }}>Interactions ({form.interactions_period}d)</span>
                 <p className="font-medium" style={{ color: '#302820' }}>{parseInt(form.avg_interactions).toLocaleString()}</p>
               </div>
             )}
             {form.avg_video_views && (
               <div>
-                <span className="section-label" style={{ fontSize: 10 }}>Avg. Video Views</span>
+                <span className="section-label" style={{ fontSize: 10 }}>Video Views ({form.interactions_period}d)</span>
                 <p className="font-medium" style={{ color: '#302820' }}>{parseInt(form.avg_video_views).toLocaleString()}</p>
               </div>
             )}
             {form.avg_profile_visits && (
               <div>
-                <span className="section-label" style={{ fontSize: 10 }}>Profile Visits/mo</span>
+                <span className="section-label" style={{ fontSize: 10 }}>Profile Visits ({form.interactions_period}d)</span>
                 <p className="font-medium" style={{ color: '#302820' }}>{parseInt(form.avg_profile_visits).toLocaleString()}</p>
               </div>
             )}
             {form.avg_accounts_reached && (
               <div>
-                <span className="section-label" style={{ fontSize: 10 }}>Accounts Reached/mo</span>
+                <span className="section-label" style={{ fontSize: 10 }}>Accounts Reached ({form.interactions_period}d)</span>
                 <p className="font-medium" style={{ color: '#302820' }}>{parseInt(form.avg_accounts_reached).toLocaleString()}</p>
               </div>
             )}
