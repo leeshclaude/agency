@@ -279,7 +279,7 @@ export default function RateCardPage() {
   if (loading) {
     return (
       <div className="page-container flex items-center justify-center min-h-screen">
-        <p style={{ color: '#b09d8a' }}>Loading…</p>
+        <p style={{ fontFamily: 'DM Sans, sans-serif', color: '#6B4A57' }}>Loading…</p>
       </div>
     )
   }
@@ -289,8 +289,13 @@ export default function RateCardPage() {
       {/* Header */}
       <div className="mb-6">
         <p className="section-label mb-1">Tools</p>
-        <h1 className="text-2xl font-semibold" style={{ color: '#302820' }}>Rate Card</h1>
-        <p className="text-sm mt-1" style={{ color: '#8e7a68' }}>
+        <h1
+          className="text-2xl"
+          style={{ fontFamily: 'Josefin Sans, sans-serif', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#2C1A22' }}
+        >
+          Rate Card
+        </h1>
+        <p className="text-sm mt-1" style={{ fontFamily: 'DM Sans, sans-serif', color: '#6B4A57' }}>
           Build your personalised media kit in minutes
         </p>
       </div>
@@ -301,10 +306,10 @@ export default function RateCardPage() {
           <div key={i} className="flex-1 flex flex-col items-center gap-1">
             <div
               className="w-full h-1 rounded-full transition-all"
-              style={{ background: i <= step ? '#c9a99a' : '#ece4dc' }}
+              style={{ background: i <= step ? '#D4688A' : '#FAE8EF' }}
             />
             {i === step && (
-              <span className="text-xs font-medium" style={{ color: '#c9a99a' }}>{label}</span>
+              <span className="text-xs font-medium" style={{ fontFamily: 'DM Sans, sans-serif', color: '#D4688A' }}>{label}</span>
             )}
           </div>
         ))}
@@ -320,7 +325,7 @@ export default function RateCardPage() {
       </div>
 
       {error && (
-        <div className="mt-4 rounded-xl px-4 py-3 text-sm" style={{ background: '#fef2f2', color: '#991b1b' }}>
+        <div className="mt-4 rounded-xl px-4 py-3 text-sm" style={{ background: '#FAE8EF', color: '#8C3A55', fontFamily: 'DM Sans, sans-serif' }}>
           {error}
         </div>
       )}
@@ -372,7 +377,7 @@ function Step1({ form, setField, toggleNiche }) {
   return (
     <>
       <div>
-        <label className="block text-sm font-medium mb-1.5" style={{ color: '#4e4238' }}>Full name</label>
+        <label className="section-label block mb-2">Full name</label>
         <input
           className="input-field"
           value={form.name}
@@ -381,7 +386,7 @@ function Step1({ form, setField, toggleNiche }) {
         />
       </div>
       <div>
-        <label className="block text-sm font-medium mb-1.5" style={{ color: '#4e4238' }}>Instagram handle</label>
+        <label className="section-label block mb-2">Instagram handle</label>
         <input
           className="input-field"
           value={form.instagram_handle}
@@ -393,8 +398,8 @@ function Step1({ form, setField, toggleNiche }) {
 
       {/* Niche — multi-select */}
       <div>
-        <label className="block text-sm font-medium mb-1" style={{ color: '#4e4238' }}>Niche</label>
-        <p className="text-xs mb-2.5" style={{ color: '#b09d8a' }}>Select all that apply</p>
+        <label className="section-label block mb-1">Niche</label>
+        <p className="text-xs mb-2.5" style={{ fontFamily: 'DM Sans, sans-serif', color: '#6B4A57' }}>Select all that apply</p>
         <div className="flex flex-wrap gap-2">
           {NICHES.map((n) => {
             const selected = form.niche.includes(n)
@@ -402,11 +407,13 @@ function Step1({ form, setField, toggleNiche }) {
               <button
                 key={n}
                 onClick={() => toggleNiche(n)}
-                className="px-3 py-1.5 rounded-full text-sm font-medium transition-all"
+                className="px-3 py-1.5 rounded-full text-sm transition-all"
                 style={{
-                  background: selected ? '#c9a99a' : '#f5f0ec',
-                  color: selected ? '#fff' : '#6e5e4f',
-                  border: `1px solid ${selected ? '#c9a99a' : '#ddd2c7'}`,
+                  fontFamily: 'DM Sans, sans-serif',
+                  fontWeight: selected ? 500 : 400,
+                  background: selected ? '#D4688A' : '#FAE8EF',
+                  color: selected ? '#fff' : '#6B4A57',
+                  border: `1px solid ${selected ? '#D4688A' : '#F2A7BE'}`,
                 }}
               >
                 {n}
@@ -425,7 +432,7 @@ function Step1({ form, setField, toggleNiche }) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium mb-1.5" style={{ color: '#4e4238' }}>Follower count</label>
+        <label className="section-label block mb-2">Follower count</label>
         <input
           className="input-field"
           type="number"
@@ -436,7 +443,7 @@ function Step1({ form, setField, toggleNiche }) {
         />
       </div>
       <div>
-        <label className="block text-sm font-medium mb-1.5" style={{ color: '#4e4238' }}>Average engagement rate (%)</label>
+        <label className="section-label block mb-2">Average engagement rate (%)</label>
         <input
           className="input-field"
           type="number"
@@ -452,7 +459,12 @@ function Step1({ form, setField, toggleNiche }) {
       {/* Instagram stats section */}
       <div className="pt-2">
         <div className="flex items-start justify-between mb-1">
-          <p className="text-sm font-semibold" style={{ color: '#302820' }}>Instagram Insights (optional)</p>
+          <p
+            className="text-xs"
+            style={{ fontFamily: 'Josefin Sans, sans-serif', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#2C1A22' }}
+          >
+            Instagram Insights
+          </p>
           <select
             className="input-field text-xs"
             style={{ width: 100, padding: '6px 10px' }}
@@ -464,14 +476,14 @@ function Step1({ form, setField, toggleNiche }) {
             <option value="90">90 days</option>
           </select>
         </div>
-        <p className="text-xs mb-4" style={{ color: '#b09d8a' }}>
-          Enter totals from your Instagram Professional Dashboard for the selected time period.
+        <p className="text-xs mb-4" style={{ fontFamily: 'DM Sans, sans-serif', color: '#6B4A57' }}>
+          Enter totals from your Instagram Professional Dashboard for the selected time period. Optional.
         </p>
         <div className="space-y-4">
 
           <div className="flex gap-3">
             <div className="flex-1">
-              <label className="block text-xs font-medium mb-1.5" style={{ color: '#4e4238' }}>Interactions</label>
+              <label className="section-label block mb-2">Interactions</label>
               <input
                 className="input-field"
                 type="number"
@@ -482,7 +494,7 @@ function Step1({ form, setField, toggleNiche }) {
               />
             </div>
             <div className="flex-1">
-              <label className="block text-xs font-medium mb-1.5" style={{ color: '#4e4238' }}>Views</label>
+              <label className="section-label block mb-2">Views</label>
               <input
                 className="input-field"
                 type="number"
@@ -496,7 +508,7 @@ function Step1({ form, setField, toggleNiche }) {
 
           <div className="flex gap-3">
             <div className="flex-1">
-              <label className="block text-xs font-medium mb-1.5" style={{ color: '#4e4238' }}>Profile visits</label>
+              <label className="section-label block mb-2">Profile visits</label>
               <input
                 className="input-field"
                 type="number"
@@ -507,7 +519,7 @@ function Step1({ form, setField, toggleNiche }) {
               />
             </div>
             <div className="flex-1">
-              <label className="block text-xs font-medium mb-1.5" style={{ color: '#4e4238' }}>Accounts reached</label>
+              <label className="section-label block mb-2">Accounts reached</label>
               <input
                 className="input-field"
                 type="number"
@@ -521,10 +533,10 @@ function Step1({ form, setField, toggleNiche }) {
 
           {/* Gender split */}
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: '#4e4238' }}>Audience gender split</label>
+            <label className="section-label block mb-2">Audience gender split</label>
             <div className="flex gap-3">
               <div className="flex-1">
-                <label className="block text-xs mb-1" style={{ color: '#8e7a68' }}>Female %</label>
+                <label className="block text-xs mb-1" style={{ fontFamily: 'DM Sans, sans-serif', color: '#6B4A57' }}>Female %</label>
                 <div className="relative">
                   <input
                     className="input-field"
@@ -536,11 +548,11 @@ function Step1({ form, setField, toggleNiche }) {
                     placeholder="e.g. 85"
                     style={{ paddingRight: 28 }}
                   />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: '#b09d8a' }}>%</span>
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: '#6B4A57' }}>%</span>
                 </div>
               </div>
               <div className="flex-1">
-                <label className="block text-xs mb-1" style={{ color: '#8e7a68' }}>Male %</label>
+                <label className="block text-xs mb-1" style={{ fontFamily: 'DM Sans, sans-serif', color: '#6B4A57' }}>Male %</label>
                 <div className="relative">
                   <input
                     className="input-field"
@@ -552,7 +564,7 @@ function Step1({ form, setField, toggleNiche }) {
                     placeholder="e.g. 15"
                     style={{ paddingRight: 28 }}
                   />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: '#b09d8a' }}>%</span>
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: '#6B4A57' }}>%</span>
                 </div>
               </div>
             </div>
@@ -560,7 +572,7 @@ function Step1({ form, setField, toggleNiche }) {
 
           {/* Top audience countries */}
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: '#4e4238' }}>Top audience countries</label>
+            <label className="section-label block mb-2">Top audience countries</label>
             <div className="space-y-2">
               {/* Country 1 */}
               <div className="flex gap-2 items-center">
@@ -582,7 +594,7 @@ function Step1({ form, setField, toggleNiche }) {
                     placeholder="0"
                     style={{ paddingRight: 24 }}
                   />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: '#b09d8a' }}>%</span>
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: '#6B4A57' }}>%</span>
                 </div>
               </div>
 
@@ -607,7 +619,7 @@ function Step1({ form, setField, toggleNiche }) {
                       placeholder="0"
                       style={{ paddingRight: 24 }}
                     />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: '#b09d8a' }}>%</span>
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: '#6B4A57' }}>%</span>
                   </div>
                 </div>
               )}
@@ -633,7 +645,7 @@ function Step1({ form, setField, toggleNiche }) {
                       placeholder="0"
                       style={{ paddingRight: 24 }}
                     />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: '#b09d8a' }}>%</span>
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: '#6B4A57' }}>%</span>
                   </div>
                 </div>
               )}
@@ -643,8 +655,8 @@ function Step1({ form, setField, toggleNiche }) {
                 {!showCountry2 && (
                   <button
                     onClick={() => setShowCountry2(true)}
-                    className="text-xs font-medium px-3 py-1.5 rounded-lg transition-all"
-                    style={{ background: '#f5f0ec', color: '#8e7a68', border: '1px solid #ddd2c7' }}
+                    className="text-xs px-3 py-1.5 rounded-full transition-all"
+                    style={{ fontFamily: 'DM Sans, sans-serif', background: '#FAE8EF', color: '#6B4A57', border: '1px solid #F2A7BE' }}
                   >
                     + Add 2nd country
                   </button>
@@ -652,8 +664,8 @@ function Step1({ form, setField, toggleNiche }) {
                 {showCountry2 && !showCountry3 && (
                   <button
                     onClick={() => setShowCountry3(true)}
-                    className="text-xs font-medium px-3 py-1.5 rounded-lg transition-all"
-                    style={{ background: '#f5f0ec', color: '#8e7a68', border: '1px solid #ddd2c7' }}
+                    className="text-xs px-3 py-1.5 rounded-full transition-all"
+                    style={{ fontFamily: 'DM Sans, sans-serif', background: '#FAE8EF', color: '#6B4A57', border: '1px solid #F2A7BE' }}
                   >
                     + Add 3rd country
                   </button>
@@ -664,10 +676,10 @@ function Step1({ form, setField, toggleNiche }) {
 
           {/* Content mix */}
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: '#4e4238' }}>Content mix</label>
+            <label className="section-label block mb-2">Content mix</label>
             <div className="flex gap-2">
               <div className="flex-1">
-                <label className="block text-xs mb-1" style={{ color: '#8e7a68' }}>Reels</label>
+                <label className="block text-xs mb-1" style={{ fontFamily: 'DM Sans, sans-serif', color: '#6B4A57' }}>Reels</label>
                 <div className="relative">
                   <input
                     className="input-field"
@@ -679,11 +691,11 @@ function Step1({ form, setField, toggleNiche }) {
                     placeholder="0"
                     style={{ paddingRight: 24 }}
                   />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: '#b09d8a' }}>%</span>
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: '#6B4A57' }}>%</span>
                 </div>
               </div>
               <div className="flex-1">
-                <label className="block text-xs mb-1" style={{ color: '#8e7a68' }}>Stories</label>
+                <label className="block text-xs mb-1" style={{ fontFamily: 'DM Sans, sans-serif', color: '#6B4A57' }}>Stories</label>
                 <div className="relative">
                   <input
                     className="input-field"
@@ -695,11 +707,11 @@ function Step1({ form, setField, toggleNiche }) {
                     placeholder="0"
                     style={{ paddingRight: 24 }}
                   />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: '#b09d8a' }}>%</span>
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: '#6B4A57' }}>%</span>
                 </div>
               </div>
               <div className="flex-1">
-                <label className="block text-xs mb-1" style={{ color: '#8e7a68' }}>Posts</label>
+                <label className="block text-xs mb-1" style={{ fontFamily: 'DM Sans, sans-serif', color: '#6B4A57' }}>Posts</label>
                 <div className="relative">
                   <input
                     className="input-field"
@@ -711,7 +723,7 @@ function Step1({ form, setField, toggleNiche }) {
                     placeholder="0"
                     style={{ paddingRight: 24 }}
                   />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: '#b09d8a' }}>%</span>
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: '#6B4A57' }}>%</span>
                 </div>
               </div>
             </div>
@@ -729,7 +741,7 @@ function Step1({ form, setField, toggleNiche }) {
 function Step2({ form, toggleContentType }) {
   return (
     <>
-      <p className="text-sm" style={{ color: '#6e5e4f' }}>
+      <p className="text-sm" style={{ fontFamily: 'DM Sans, sans-serif', color: '#6B4A57' }}>
         Select all the content types you offer to brands.
       </p>
       <div className="space-y-2">
@@ -741,21 +753,21 @@ function Step2({ form, toggleContentType }) {
               onClick={() => toggleContentType(key)}
               className="w-full text-left px-4 py-3.5 rounded-xl transition-all flex items-center gap-3"
               style={{
-                background: selected ? '#edd5cc' : '#fff',
-                border: `1px solid ${selected ? '#c9a99a' : '#ddd2c7'}`,
-                color: selected ? '#4e4238' : '#6e5e4f',
+                background: selected ? '#FAE8EF' : '#FEF9FB',
+                border: `1px solid ${selected ? '#D4688A' : '#F2A7BE'}`,
+                color: selected ? '#2C1A22' : '#6B4A57',
               }}
             >
               <div
                 className="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0"
                 style={{
-                  background: selected ? '#c9a99a' : '#f5f0ec',
-                  border: `1.5px solid ${selected ? '#c9a99a' : '#ddd2c7'}`,
+                  background: selected ? '#D4688A' : '#FAE8EF',
+                  border: `1.5px solid ${selected ? '#D4688A' : '#F2A7BE'}`,
                 }}
               >
                 {selected && <span style={{ color: '#fff', fontSize: 12 }}>✓</span>}
               </div>
-              <span className="text-sm font-medium">{label}</span>
+              <span className="text-sm" style={{ fontFamily: 'DM Sans, sans-serif', fontWeight: selected ? 500 : 400 }}>{label}</span>
             </button>
           )
         })}
@@ -771,7 +783,7 @@ function Step3({ form, setField, showTooltip, setShowTooltip }) {
   return (
     <>
       <div>
-        <label className="block text-sm font-medium mb-2" style={{ color: '#4e4238' }}>
+        <label className="section-label block mb-2">
           Open to gifted collabs (no fee)?
         </label>
         <TripleToggle
@@ -787,7 +799,7 @@ function Step3({ form, setField, showTooltip, setShowTooltip }) {
 
       {form.open_to_gifted === 'yes' && (
         <div>
-          <label className="block text-sm font-medium mb-1.5" style={{ color: '#4e4238' }}>
+          <label className="section-label block mb-2">
             Minimum product value required
           </label>
           <input
@@ -813,19 +825,19 @@ function Step3({ form, setField, showTooltip, setShowTooltip }) {
 
       <div>
         <div className="flex items-center gap-2 mb-2">
-          <label className="text-sm font-medium" style={{ color: '#4e4238' }}>
+          <label className="section-label">
             Open to whitelisting / content boosting?
           </label>
           <button
             onClick={() => setShowTooltip(!showTooltip)}
             className="w-5 h-5 rounded-full text-xs font-semibold flex items-center justify-center flex-shrink-0"
-            style={{ background: '#ece4dc', color: '#8e7a68' }}
+            style={{ background: '#FAE8EF', color: '#6B4A57' }}
           >
             ?
           </button>
         </div>
         {showTooltip && (
-          <div className="card p-3 mb-2 text-sm" style={{ color: '#6e5e4f' }}>
+          <div className="card p-3 mb-2 text-sm" style={{ fontFamily: 'DM Sans, sans-serif', color: '#6B4A57' }}>
             Whitelisting lets a brand run paid ads using your content and account. They may reach audiences beyond your followers using your face and voice. This is a premium service — charge accordingly.
           </div>
         )}
@@ -856,12 +868,15 @@ function Step4({ form, setRate }) {
     <>
       <div
         className="rounded-2xl p-4"
-        style={{ background: '#edd5cc' }}
+        style={{ background: '#FAE8EF' }}
       >
-        <p className="text-sm font-semibold mb-1" style={{ color: '#302820' }}>
+        <p
+          className="text-xs mb-1"
+          style={{ fontFamily: 'Josefin Sans, sans-serif', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#2C1A22' }}
+        >
           Suggested starting rates
         </p>
-        <p className="text-sm" style={{ color: '#6e5e4f' }}>
+        <p className="text-sm" style={{ fontFamily: 'DM Sans, sans-serif', color: '#6B4A57' }}>
           Based on your following ({baseSuggested.label}). Each content type has its own suggested rate — adjust freely.
         </p>
       </div>
@@ -872,15 +887,15 @@ function Step4({ form, setRate }) {
           return (
             <div key={key}>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-sm font-medium" style={{ color: '#4e4238' }}>{label}</label>
-                <span className="text-xs" style={{ color: '#b09d8a' }}>
+                <label className="section-label">{label}</label>
+                <span className="text-xs" style={{ fontFamily: 'DM Sans, sans-serif', color: '#6B4A57' }}>
                   suggested ${s.min}{s.max ? `–$${s.max}` : '+'}
                 </span>
               </div>
               <div className="relative">
                 <span
                   className="absolute left-4 top-1/2 -translate-y-1/2 font-medium"
-                  style={{ color: '#b09d8a' }}
+                  style={{ color: '#6B4A57' }}
                 >
                   $
                 </span>
@@ -940,41 +955,46 @@ function Step5({ form }) {
       {statsUpdatedDisplay && (
         <div
           className="rounded-xl px-4 py-2.5 text-xs flex items-center gap-2"
-          style={{ background: '#f5f0ec', color: '#8e7a68' }}
+          style={{ background: '#FAE8EF', color: '#6B4A57', fontFamily: 'DM Sans, sans-serif' }}
         >
-          <span style={{ color: '#c9a99a' }}>●</span>
-          Stats last updated: <strong style={{ color: '#4e4238' }}>{statsUpdatedDisplay}</strong>
+          <span style={{ color: '#D4688A' }}>●</span>
+          Stats last updated: <strong style={{ color: '#2C1A22' }}>{statsUpdatedDisplay}</strong>
           <span className="ml-auto italic">(visible to you only)</span>
         </div>
       )}
 
       <div className="card overflow-hidden">
-        <div className="h-2" style={{ background: '#c9a99a' }} />
+        <div className="h-2" style={{ background: '#D4688A' }} />
         <div className="p-5">
           <p className="section-label mb-1">Rate Card</p>
-          <h2 className="text-xl font-semibold" style={{ color: '#302820' }}>{form.name}</h2>
-          <p style={{ color: '#8e7a68' }}>{handle}</p>
+          <h2
+            className="text-xl"
+            style={{ fontFamily: 'Josefin Sans, sans-serif', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#2C1A22' }}
+          >
+            {form.name}
+          </h2>
+          <p style={{ fontFamily: 'DM Sans, sans-serif', color: '#6B4A57' }}>{handle}</p>
 
           <div className="mt-4 grid grid-cols-3 gap-x-3 gap-y-3 text-sm">
             <div className={nicheDisplay.length > 15 ? 'col-span-3' : 'col-span-1'}>
               <span className="section-label" style={{ fontSize: 10 }}>Niche</span>
-              <p className="font-medium" style={{ color: '#302820' }}>{nicheDisplay || '—'}</p>
+              <p className="font-medium" style={{ fontFamily: 'DM Sans, sans-serif', color: '#2C1A22' }}>{nicheDisplay || '—'}</p>
             </div>
             <div>
               <span className="section-label" style={{ fontSize: 10 }}>Followers</span>
-              <p className="font-medium" style={{ color: '#302820' }}>
+              <p className="font-medium" style={{ fontFamily: 'DM Sans, sans-serif', color: '#2C1A22' }}>
                 {parseInt(form.follower_count || 0).toLocaleString()}
               </p>
             </div>
             <div>
               <span className="section-label" style={{ fontSize: 10 }}>Engagement</span>
-              <p className="font-medium" style={{ color: '#302820' }}>{form.engagement_rate}%</p>
+              <p className="font-medium" style={{ fontFamily: 'DM Sans, sans-serif', color: '#2C1A22' }}>{form.engagement_rate}%</p>
             </div>
 
             {(form.audience_female_pct || form.audience_male_pct) && (
               <div className="col-span-3">
                 <span className="section-label" style={{ fontSize: 10 }}>Audience Gender</span>
-                <p className="font-medium" style={{ color: '#302820' }}>
+                <p className="font-medium" style={{ fontFamily: 'DM Sans, sans-serif', color: '#2C1A22' }}>
                   {[
                     form.audience_female_pct && `${form.audience_female_pct}% Female`,
                     form.audience_male_pct && `${form.audience_male_pct}% Male`,
@@ -986,32 +1006,32 @@ function Step5({ form }) {
             {form.avg_interactions && (
               <div>
                 <span className="section-label" style={{ fontSize: 10 }}>Interactions ({form.interactions_period}d)</span>
-                <p className="font-medium" style={{ color: '#302820' }}>{parseInt(form.avg_interactions).toLocaleString()}</p>
+                <p className="font-medium" style={{ fontFamily: 'DM Sans, sans-serif', color: '#2C1A22' }}>{parseInt(form.avg_interactions).toLocaleString()}</p>
               </div>
             )}
             {form.avg_video_views && (
               <div>
                 <span className="section-label" style={{ fontSize: 10 }}>Views ({form.interactions_period}d)</span>
-                <p className="font-medium" style={{ color: '#302820' }}>{parseInt(form.avg_video_views).toLocaleString()}</p>
+                <p className="font-medium" style={{ fontFamily: 'DM Sans, sans-serif', color: '#2C1A22' }}>{parseInt(form.avg_video_views).toLocaleString()}</p>
               </div>
             )}
             {form.avg_profile_visits && (
               <div>
                 <span className="section-label" style={{ fontSize: 10 }}>Profile Visits ({form.interactions_period}d)</span>
-                <p className="font-medium" style={{ color: '#302820' }}>{parseInt(form.avg_profile_visits).toLocaleString()}</p>
+                <p className="font-medium" style={{ fontFamily: 'DM Sans, sans-serif', color: '#2C1A22' }}>{parseInt(form.avg_profile_visits).toLocaleString()}</p>
               </div>
             )}
             {form.avg_accounts_reached && (
               <div>
                 <span className="section-label" style={{ fontSize: 10 }}>Accounts Reached ({form.interactions_period}d)</span>
-                <p className="font-medium" style={{ color: '#302820' }}>{parseInt(form.avg_accounts_reached).toLocaleString()}</p>
+                <p className="font-medium" style={{ fontFamily: 'DM Sans, sans-serif', color: '#2C1A22' }}>{parseInt(form.avg_accounts_reached).toLocaleString()}</p>
               </div>
             )}
 
             {countries.length > 0 && (
               <div className="col-span-3">
                 <span className="section-label" style={{ fontSize: 10 }}>Top Audience Countries</span>
-                <p className="font-medium" style={{ color: '#302820' }}>
+                <p className="font-medium" style={{ fontFamily: 'DM Sans, sans-serif', color: '#2C1A22' }}>
                   {countries.map((c) => `${c.name}${c.pct ? ` ${c.pct}%` : ''}`).join('  ·  ')}
                 </p>
               </div>
@@ -1020,7 +1040,7 @@ function Step5({ form }) {
             {hasMix && (
               <div className="col-span-3">
                 <span className="section-label" style={{ fontSize: 10 }}>Content Mix</span>
-                <p className="font-medium" style={{ color: '#302820' }}>
+                <p className="font-medium" style={{ fontFamily: 'DM Sans, sans-serif', color: '#2C1A22' }}>
                   {[
                     form.content_mix_reels_pct && `Reels ${form.content_mix_reels_pct}%`,
                     form.content_mix_stories_pct && `Stories ${form.content_mix_stories_pct}%`,
@@ -1036,9 +1056,9 @@ function Step5({ form }) {
             <div className="space-y-2">
               {selectedTypes.map(({ key, label }) => (
                 <div key={key} className="flex justify-between items-center text-sm py-1"
-                  style={{ borderBottom: '1px solid #f5f0ec' }}>
-                  <span style={{ color: '#4e4238' }}>{label}</span>
-                  <span className="font-semibold" style={{ color: '#302820' }}>
+                  style={{ borderBottom: '1px solid #FAE8EF' }}>
+                  <span style={{ fontFamily: 'DM Sans, sans-serif', color: '#6B4A57' }}>{label}</span>
+                  <span className="font-semibold" style={{ fontFamily: 'DM Sans, sans-serif', color: '#2C1A22' }}>
                     {form.custom_rates[key]
                       ? `$${form.custom_rates[key]}`
                       : `$${suggested.min}${suggested.max ? `–$${suggested.max}` : '+'}`}
@@ -1061,7 +1081,7 @@ function Step5({ form }) {
             </div>
           </div>
 
-          <p className="text-xs mt-5" style={{ color: '#b09d8a' }}>
+          <p className="text-xs mt-5" style={{ fontFamily: 'DM Sans, sans-serif', color: '#6B4A57' }}>
             Rates current as of {new Date().toLocaleDateString('en-AU', { month: 'long', year: 'numeric' })} · All rates are in AUD and exclude GST
           </p>
         </div>
@@ -1075,16 +1095,18 @@ function Step5({ form }) {
 // ─────────────────────────────────────────────────
 function TripleToggle({ value, onChange, options }) {
   return (
-    <div className="flex rounded-xl overflow-hidden" style={{ border: '1px solid #ddd2c7' }}>
+    <div className="flex rounded-xl overflow-hidden" style={{ border: '1px solid #F2A7BE' }}>
       {options.map(({ value: v, label }) => (
         <button
           key={v}
           onClick={() => onChange(v)}
-          className="flex-1 py-2.5 text-sm font-medium transition-all"
+          className="flex-1 py-2.5 text-sm transition-all"
           style={{
-            background: value === v ? '#c9a99a' : '#fff',
-            color: value === v ? '#fff' : '#6e5e4f',
-            borderRight: '1px solid #ddd2c7',
+            fontFamily: 'DM Sans, sans-serif',
+            fontWeight: value === v ? 500 : 400,
+            background: value === v ? '#D4688A' : '#FEF9FB',
+            color: value === v ? '#fff' : '#6B4A57',
+            borderRight: '1px solid #F2A7BE',
           }}
         >
           {label}
@@ -1097,17 +1119,19 @@ function TripleToggle({ value, onChange, options }) {
 function BoolField({ label, value, onChange }) {
   return (
     <div>
-      <label className="block text-sm font-medium mb-2" style={{ color: '#4e4238' }}>{label}</label>
-      <div className="flex rounded-xl overflow-hidden" style={{ border: '1px solid #ddd2c7' }}>
+      <label className="section-label block mb-2">{label}</label>
+      <div className="flex rounded-xl overflow-hidden" style={{ border: '1px solid #F2A7BE' }}>
         {[{ v: true, l: 'Yes' }, { v: false, l: 'No' }].map(({ v, l }) => (
           <button
             key={l}
             onClick={() => onChange(v)}
-            className="flex-1 py-2.5 text-sm font-medium transition-all"
+            className="flex-1 py-2.5 text-sm transition-all"
             style={{
-              background: value === v ? '#c9a99a' : '#fff',
-              color: value === v ? '#fff' : '#6e5e4f',
-              borderRight: '1px solid #ddd2c7',
+              fontFamily: 'DM Sans, sans-serif',
+              fontWeight: value === v ? 500 : 400,
+              background: value === v ? '#D4688A' : '#FEF9FB',
+              color: value === v ? '#fff' : '#6B4A57',
+              borderRight: '1px solid #F2A7BE',
             }}
           >
             {l}
@@ -1121,8 +1145,8 @@ function BoolField({ label, value, onChange }) {
 function PrefRow({ label, value }) {
   return (
     <div className="flex justify-between py-0.5">
-      <span style={{ color: '#8e7a68' }}>{label}</span>
-      <span className="font-medium" style={{ color: '#302820' }}>{value}</span>
+      <span style={{ fontFamily: 'DM Sans, sans-serif', color: '#6B4A57' }}>{label}</span>
+      <span style={{ fontFamily: 'DM Sans, sans-serif', fontWeight: 500, color: '#2C1A22' }}>{value}</span>
     </div>
   )
 }
