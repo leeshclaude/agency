@@ -29,14 +29,26 @@ const INITIAL_FORM = {
   // Step 1
   name: '',
   instagram_handle: '',
-  niche: 'Lifestyle',
+  niche: [],
   follower_count: '',
   engagement_rate: '',
+  interactions_period: '30',
   avg_interactions: '',
   avg_video_views: '',
   avg_profile_visits: '',
   avg_accounts_reached: '',
+  audience_male_pct: '',
+  audience_female_pct: '',
   top_country: '',
+  top_country_pct: '',
+  country_2: '',
+  country_2_pct: '',
+  country_3: '',
+  country_3_pct: '',
+  content_mix_reels_pct: '',
+  content_mix_stories_pct: '',
+  content_mix_posts_pct: '',
+  stats_updated_at: null,
   // Step 2
   content_types: [],
   // Step 3
@@ -76,14 +88,27 @@ export default function RateCardPage() {
       setForm({
         name: data.name,
         instagram_handle: data.instagram_handle,
-        niche: data.niche,
+        // Handle legacy text niche and new array niche
+        niche: Array.isArray(data.niche) ? data.niche : (data.niche ? [data.niche] : []),
         follower_count: data.follower_count,
         engagement_rate: data.engagement_rate,
+        interactions_period: data.interactions_period || '30',
         avg_interactions: data.avg_interactions || '',
         avg_video_views: data.avg_video_views || '',
         avg_profile_visits: data.avg_profile_visits || '',
         avg_accounts_reached: data.avg_accounts_reached || '',
+        audience_male_pct: data.audience_male_pct || '',
+        audience_female_pct: data.audience_female_pct || '',
         top_country: data.top_country || '',
+        top_country_pct: data.top_country_pct || '',
+        country_2: data.country_2 || '',
+        country_2_pct: data.country_2_pct || '',
+        country_3: data.country_3 || '',
+        country_3_pct: data.country_3_pct || '',
+        content_mix_reels_pct: data.content_mix_reels_pct || '',
+        content_mix_stories_pct: data.content_mix_stories_pct || '',
+        content_mix_posts_pct: data.content_mix_posts_pct || '',
+        stats_updated_at: data.stats_updated_at || null,
         content_types: data.content_types || [],
         open_to_gifted: data.open_to_gifted,
         gifted_min_value: data.gifted_min_value || '',
@@ -94,7 +119,6 @@ export default function RateCardPage() {
         custom_rates: data.custom_rates || {},
       })
     } else {
-      // Pre-fill from profile
       setForm((f) => ({
         ...f,
         name: profile.full_name || '',
@@ -107,6 +131,15 @@ export default function RateCardPage() {
 
   function setField(field, value) {
     setForm((f) => ({ ...f, [field]: value }))
+  }
+
+  function toggleNiche(n) {
+    setForm((f) => ({
+      ...f,
+      niche: f.niche.includes(n)
+        ? f.niche.filter((x) => x !== n)
+        : [...f.niche, n],
+    }))
   }
 
   function toggleContentType(key) {
@@ -132,6 +165,7 @@ export default function RateCardPage() {
       if (!form.instagram_handle.trim()) return setError('Instagram handle is required.') || false
       if (!form.follower_count || isNaN(form.follower_count)) return setError('Follower count is required.') || false
       if (!form.engagement_rate || isNaN(form.engagement_rate)) return setError('Engagement rate is required.') || false
+      if (form.niche.length === 0) return setError('Please select at least one niche.') || false
     }
     if (step === 1) {
       if (form.content_types.length === 0) return setError('Select at least one content type.') || false
@@ -157,6 +191,8 @@ export default function RateCardPage() {
       ? form.instagram_handle
       : `@${form.instagram_handle}`
 
+    const now = new Date().toISOString()
+
     const payload = {
       user_id: profile.id,
       name: form.name.trim(),
@@ -164,6 +200,7 @@ export default function RateCardPage() {
       niche: form.niche,
       follower_count: parseInt(form.follower_count),
       engagement_rate: parseFloat(form.engagement_rate),
+      interactions_period: form.interactions_period,
       content_types: form.content_types,
       open_to_gifted: form.open_to_gifted,
       gifted_min_value: form.gifted_min_value.trim() || null,
@@ -176,7 +213,18 @@ export default function RateCardPage() {
       avg_video_views: parseInt(form.avg_video_views) || null,
       avg_profile_visits: parseInt(form.avg_profile_visits) || null,
       avg_accounts_reached: parseInt(form.avg_accounts_reached) || null,
+      audience_male_pct: parseFloat(form.audience_male_pct) || null,
+      audience_female_pct: parseFloat(form.audience_female_pct) || null,
       top_country: form.top_country.trim() || null,
+      top_country_pct: parseFloat(form.top_country_pct) || null,
+      country_2: form.country_2.trim() || null,
+      country_2_pct: parseFloat(form.country_2_pct) || null,
+      country_3: form.country_3.trim() || null,
+      country_3_pct: parseFloat(form.country_3_pct) || null,
+      content_mix_reels_pct: parseFloat(form.content_mix_reels_pct) || null,
+      content_mix_stories_pct: parseFloat(form.content_mix_stories_pct) || null,
+      content_mix_posts_pct: parseFloat(form.content_mix_posts_pct) || null,
+      stats_updated_at: now,
     }
 
     let err
@@ -187,6 +235,10 @@ export default function RateCardPage() {
       const { error: e, data } = await supabase.from('rate_cards').insert(payload).select().single()
       if (data) setExistingId(data.id)
       err = e
+    }
+
+    if (!err) {
+      setForm((f) => ({ ...f, stats_updated_at: now }))
     }
 
     if (err) setError(err.message)
@@ -236,7 +288,7 @@ export default function RateCardPage() {
 
       {/* Step content */}
       <div className="space-y-4">
-        {step === 0 && <Step1 form={form} setField={setField} />}
+        {step === 0 && <Step1 form={form} setField={setField} toggleNiche={toggleNiche} />}
         {step === 1 && <Step2 form={form} toggleContentType={toggleContentType} />}
         {step === 2 && <Step3 form={form} setField={setField} showTooltip={showTooltip} setShowTooltip={setShowTooltip} />}
         {step === 3 && <Step4 form={form} setRate={setRate} />}
@@ -289,7 +341,10 @@ export default function RateCardPage() {
 // ─────────────────────────────────────────────────
 // Step 1: Details
 // ─────────────────────────────────────────────────
-function Step1({ form, setField }) {
+function Step1({ form, setField, toggleNiche }) {
+  const [showCountry2, setShowCountry2] = useState(!!form.country_2)
+  const [showCountry3, setShowCountry3] = useState(!!form.country_3)
+
   return (
     <>
       <div>
@@ -311,16 +366,32 @@ function Step1({ form, setField }) {
           autoCapitalize="none"
         />
       </div>
+
+      {/* Niche — multi-select */}
       <div>
-        <label className="block text-sm font-medium mb-1.5" style={{ color: '#4e4238' }}>Niche</label>
-        <select
-          className="input-field"
-          value={form.niche}
-          onChange={(e) => setField('niche', e.target.value)}
-        >
-          {NICHES.map((n) => <option key={n} value={n}>{n}</option>)}
-        </select>
+        <label className="block text-sm font-medium mb-1" style={{ color: '#4e4238' }}>Niche</label>
+        <p className="text-xs mb-2.5" style={{ color: '#b09d8a' }}>Select all that apply</p>
+        <div className="flex flex-wrap gap-2">
+          {NICHES.map((n) => {
+            const selected = form.niche.includes(n)
+            return (
+              <button
+                key={n}
+                onClick={() => toggleNiche(n)}
+                className="px-3 py-1.5 rounded-full text-sm font-medium transition-all"
+                style={{
+                  background: selected ? '#c9a99a' : '#f5f0ec',
+                  color: selected ? '#fff' : '#6e5e4f',
+                  border: `1px solid ${selected ? '#c9a99a' : '#ddd2c7'}`,
+                }}
+              >
+                {n}
+              </button>
+            )
+          })}
+        </div>
       </div>
+
       <div>
         <label className="block text-sm font-medium mb-1.5" style={{ color: '#4e4238' }}>Follower count</label>
         <input
@@ -353,30 +424,48 @@ function Step1({ form, setField }) {
           Find these in your Instagram app under Professional Dashboard → Account Insights. Adding them makes your rate card more compelling to brands.
         </p>
         <div className="space-y-4">
-          <div className="flex gap-3">
-            <div className="flex-1">
-              <label className="block text-xs font-medium mb-1.5" style={{ color: '#4e4238' }}>Avg. interactions per post</label>
+
+          {/* Avg interactions + period dropdown */}
+          <div>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: '#4e4238' }}>Avg. interactions per post</label>
+            <div className="flex gap-2">
               <input
                 className="input-field"
+                style={{ flex: 1 }}
                 type="number"
                 min="0"
                 value={form.avg_interactions}
                 onChange={(e) => setField('avg_interactions', e.target.value)}
                 placeholder="e.g. 320"
               />
-            </div>
-            <div className="flex-1">
-              <label className="block text-xs font-medium mb-1.5" style={{ color: '#4e4238' }}>Avg. video views</label>
-              <input
+              <select
                 className="input-field"
-                type="number"
-                min="0"
-                value={form.avg_video_views}
-                onChange={(e) => setField('avg_video_views', e.target.value)}
-                placeholder="e.g. 4500"
-              />
+                style={{ width: 110 }}
+                value={form.interactions_period}
+                onChange={(e) => setField('interactions_period', e.target.value)}
+              >
+                <option value="30">30 days</option>
+                <option value="60">60 days</option>
+                <option value="90">90 days</option>
+              </select>
             </div>
+            <p className="text-xs mt-1" style={{ color: '#b09d8a' }}>
+              Select the time frame from your Professional Dashboard
+            </p>
           </div>
+
+          <div>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: '#4e4238' }}>Avg. video views</label>
+            <input
+              className="input-field"
+              type="number"
+              min="0"
+              value={form.avg_video_views}
+              onChange={(e) => setField('avg_video_views', e.target.value)}
+              placeholder="e.g. 4500"
+            />
+          </div>
+
           <div className="flex gap-3">
             <div className="flex-1">
               <label className="block text-xs font-medium mb-1.5" style={{ color: '#4e4238' }}>Avg. profile visits/month</label>
@@ -401,15 +490,205 @@ function Step1({ form, setField }) {
               />
             </div>
           </div>
+
+          {/* Gender split */}
           <div>
-            <label className="block text-xs font-medium mb-1.5" style={{ color: '#4e4238' }}>Top audience country</label>
-            <input
-              className="input-field"
-              value={form.top_country}
-              onChange={(e) => setField('top_country', e.target.value)}
-              placeholder="e.g. Australia"
-            />
+            <label className="block text-xs font-medium mb-1.5" style={{ color: '#4e4238' }}>Audience gender split</label>
+            <div className="flex gap-3">
+              <div className="flex-1">
+                <label className="block text-xs mb-1" style={{ color: '#8e7a68' }}>Female %</label>
+                <div className="relative">
+                  <input
+                    className="input-field"
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={form.audience_female_pct}
+                    onChange={(e) => setField('audience_female_pct', e.target.value)}
+                    placeholder="e.g. 85"
+                    style={{ paddingRight: 28 }}
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: '#b09d8a' }}>%</span>
+                </div>
+              </div>
+              <div className="flex-1">
+                <label className="block text-xs mb-1" style={{ color: '#8e7a68' }}>Male %</label>
+                <div className="relative">
+                  <input
+                    className="input-field"
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={form.audience_male_pct}
+                    onChange={(e) => setField('audience_male_pct', e.target.value)}
+                    placeholder="e.g. 15"
+                    style={{ paddingRight: 28 }}
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: '#b09d8a' }}>%</span>
+                </div>
+              </div>
+            </div>
           </div>
+
+          {/* Top audience countries */}
+          <div>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: '#4e4238' }}>Top audience countries</label>
+            <div className="space-y-2">
+              {/* Country 1 */}
+              <div className="flex gap-2 items-center">
+                <input
+                  className="input-field"
+                  style={{ flex: 1 }}
+                  value={form.top_country}
+                  onChange={(e) => setField('top_country', e.target.value)}
+                  placeholder="e.g. Australia"
+                />
+                <div className="relative" style={{ width: 76 }}>
+                  <input
+                    className="input-field"
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={form.top_country_pct}
+                    onChange={(e) => setField('top_country_pct', e.target.value)}
+                    placeholder="0"
+                    style={{ paddingRight: 24 }}
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: '#b09d8a' }}>%</span>
+                </div>
+              </div>
+
+              {/* Country 2 */}
+              {showCountry2 && (
+                <div className="flex gap-2 items-center">
+                  <input
+                    className="input-field"
+                    style={{ flex: 1 }}
+                    value={form.country_2}
+                    onChange={(e) => setField('country_2', e.target.value)}
+                    placeholder="2nd country"
+                  />
+                  <div className="relative" style={{ width: 76 }}>
+                    <input
+                      className="input-field"
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={form.country_2_pct}
+                      onChange={(e) => setField('country_2_pct', e.target.value)}
+                      placeholder="0"
+                      style={{ paddingRight: 24 }}
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: '#b09d8a' }}>%</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Country 3 */}
+              {showCountry3 && (
+                <div className="flex gap-2 items-center">
+                  <input
+                    className="input-field"
+                    style={{ flex: 1 }}
+                    value={form.country_3}
+                    onChange={(e) => setField('country_3', e.target.value)}
+                    placeholder="3rd country"
+                  />
+                  <div className="relative" style={{ width: 76 }}>
+                    <input
+                      className="input-field"
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={form.country_3_pct}
+                      onChange={(e) => setField('country_3_pct', e.target.value)}
+                      placeholder="0"
+                      style={{ paddingRight: 24 }}
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: '#b09d8a' }}>%</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Add country buttons */}
+              <div className="flex gap-2 pt-1">
+                {!showCountry2 && (
+                  <button
+                    onClick={() => setShowCountry2(true)}
+                    className="text-xs font-medium px-3 py-1.5 rounded-lg transition-all"
+                    style={{ background: '#f5f0ec', color: '#8e7a68', border: '1px solid #ddd2c7' }}
+                  >
+                    + Add 2nd country
+                  </button>
+                )}
+                {showCountry2 && !showCountry3 && (
+                  <button
+                    onClick={() => setShowCountry3(true)}
+                    className="text-xs font-medium px-3 py-1.5 rounded-lg transition-all"
+                    style={{ background: '#f5f0ec', color: '#8e7a68', border: '1px solid #ddd2c7' }}
+                  >
+                    + Add 3rd country
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Content mix */}
+          <div>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: '#4e4238' }}>Content mix</label>
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <label className="block text-xs mb-1" style={{ color: '#8e7a68' }}>Reels</label>
+                <div className="relative">
+                  <input
+                    className="input-field"
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={form.content_mix_reels_pct}
+                    onChange={(e) => setField('content_mix_reels_pct', e.target.value)}
+                    placeholder="0"
+                    style={{ paddingRight: 24 }}
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: '#b09d8a' }}>%</span>
+                </div>
+              </div>
+              <div className="flex-1">
+                <label className="block text-xs mb-1" style={{ color: '#8e7a68' }}>Stories</label>
+                <div className="relative">
+                  <input
+                    className="input-field"
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={form.content_mix_stories_pct}
+                    onChange={(e) => setField('content_mix_stories_pct', e.target.value)}
+                    placeholder="0"
+                    style={{ paddingRight: 24 }}
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: '#b09d8a' }}>%</span>
+                </div>
+              </div>
+              <div className="flex-1">
+                <label className="block text-xs mb-1" style={{ color: '#8e7a68' }}>Posts</label>
+                <div className="relative">
+                  <input
+                    className="input-field"
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={form.content_mix_posts_pct}
+                    onChange={(e) => setField('content_mix_posts_pct', e.target.value)}
+                    placeholder="0"
+                    style={{ paddingRight: 24 }}
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: '#b09d8a' }}>%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </>
@@ -616,8 +895,37 @@ function Step5({ form }) {
   const giftedLabels = { yes: 'Yes', no: 'No', depends: 'Depends on brand' }
   const whitelistLabels = { yes: 'Yes', no: 'No', what_is_this: 'Not sure yet' }
 
+  const nicheDisplay = Array.isArray(form.niche) ? form.niche.join(', ') : form.niche
+
+  // Countries
+  const countries = [
+    form.top_country && { name: form.top_country, pct: form.top_country_pct },
+    form.country_2 && { name: form.country_2, pct: form.country_2_pct },
+    form.country_3 && { name: form.country_3, pct: form.country_3_pct },
+  ].filter(Boolean)
+
+  // Content mix
+  const hasMix = form.content_mix_reels_pct || form.content_mix_stories_pct || form.content_mix_posts_pct
+
+  // Stats last updated
+  const statsUpdatedDisplay = form.stats_updated_at
+    ? new Date(form.stats_updated_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' })
+    : null
+
   return (
     <>
+      {/* Influencer-only: stats last updated */}
+      {statsUpdatedDisplay && (
+        <div
+          className="rounded-xl px-4 py-2.5 text-xs flex items-center gap-2"
+          style={{ background: '#f5f0ec', color: '#8e7a68' }}
+        >
+          <span style={{ color: '#c9a99a' }}>●</span>
+          Stats last updated: <strong style={{ color: '#4e4238' }}>{statsUpdatedDisplay}</strong>
+          <span className="ml-auto italic">(visible to you only)</span>
+        </div>
+      )}
+
       <div className="card overflow-hidden">
         <div className="h-2" style={{ background: '#c9a99a' }} />
         <div className="p-5">
@@ -626,9 +934,9 @@ function Step5({ form }) {
           <p style={{ color: '#8e7a68' }}>{handle}</p>
 
           <div className="mt-4 grid grid-cols-3 gap-x-3 gap-y-3 text-sm">
-            <div>
+            <div className={nicheDisplay.length > 15 ? 'col-span-3' : 'col-span-1'}>
               <span className="section-label" style={{ fontSize: 10 }}>Niche</span>
-              <p className="font-medium" style={{ color: '#302820' }}>{form.niche}</p>
+              <p className="font-medium" style={{ color: '#302820' }}>{nicheDisplay || '—'}</p>
             </div>
             <div>
               <span className="section-label" style={{ fontSize: 10 }}>Followers</span>
@@ -640,9 +948,22 @@ function Step5({ form }) {
               <span className="section-label" style={{ fontSize: 10 }}>Engagement</span>
               <p className="font-medium" style={{ color: '#302820' }}>{form.engagement_rate}%</p>
             </div>
+
+            {(form.audience_female_pct || form.audience_male_pct) && (
+              <div className="col-span-3">
+                <span className="section-label" style={{ fontSize: 10 }}>Audience Gender</span>
+                <p className="font-medium" style={{ color: '#302820' }}>
+                  {[
+                    form.audience_female_pct && `${form.audience_female_pct}% Female`,
+                    form.audience_male_pct && `${form.audience_male_pct}% Male`,
+                  ].filter(Boolean).join('  ·  ')}
+                </p>
+              </div>
+            )}
+
             {form.avg_interactions && (
               <div>
-                <span className="section-label" style={{ fontSize: 10 }}>Avg. Interactions</span>
+                <span className="section-label" style={{ fontSize: 10 }}>Avg. Interactions ({form.interactions_period}d)</span>
                 <p className="font-medium" style={{ color: '#302820' }}>{parseInt(form.avg_interactions).toLocaleString()}</p>
               </div>
             )}
@@ -664,10 +985,26 @@ function Step5({ form }) {
                 <p className="font-medium" style={{ color: '#302820' }}>{parseInt(form.avg_accounts_reached).toLocaleString()}</p>
               </div>
             )}
-            {form.top_country && (
-              <div>
-                <span className="section-label" style={{ fontSize: 10 }}>Top Audience</span>
-                <p className="font-medium" style={{ color: '#302820' }}>{form.top_country}</p>
+
+            {countries.length > 0 && (
+              <div className="col-span-3">
+                <span className="section-label" style={{ fontSize: 10 }}>Top Audience Countries</span>
+                <p className="font-medium" style={{ color: '#302820' }}>
+                  {countries.map((c) => `${c.name}${c.pct ? ` ${c.pct}%` : ''}`).join('  ·  ')}
+                </p>
+              </div>
+            )}
+
+            {hasMix && (
+              <div className="col-span-3">
+                <span className="section-label" style={{ fontSize: 10 }}>Content Mix</span>
+                <p className="font-medium" style={{ color: '#302820' }}>
+                  {[
+                    form.content_mix_reels_pct && `Reels ${form.content_mix_reels_pct}%`,
+                    form.content_mix_stories_pct && `Stories ${form.content_mix_stories_pct}%`,
+                    form.content_mix_posts_pct && `Posts ${form.content_mix_posts_pct}%`,
+                  ].filter(Boolean).join('  ·  ')}
+                </p>
               </div>
             )}
           </div>

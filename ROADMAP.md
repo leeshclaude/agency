@@ -18,6 +18,7 @@
 - [x] Improvement 5: Chat redesign — Instagram DM style with grouped messages, long press to delete, avatars per group
 - [x] Improvement 6: Chat channels — General 💬, Intro's ✨, Engagement 💕, Brand Ops 💸 (General default)
 - [x] Chat extras — admin badge on messages, pinned messages per channel, delete button always right-aligned
+- [x] Rate card v2 — niche multi-select, interactions period dropdown (30/60/90d), gender split (M/F %), top 3 audience countries with %, content mix (Reels/Stories/Posts %), stats last-updated timestamp
 
 ---
 

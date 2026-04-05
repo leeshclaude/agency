@@ -26,7 +26,8 @@ npm run preview    # Preview production build locally
    VITE_SUPABASE_ANON_KEY=eyJ...
    ```
 4. Run `supabase-schema.sql` in the Supabase SQL Editor (Dashboard → SQL Editor)
-5. In Supabase Auth settings, enable email confirmations off (or on — your choice) and set Site URL to your Vercel domain
+5. For existing projects, also run `supabase-migration-rate-card-v2.sql` to add new rate card columns
+6. In Supabase Auth settings, enable email confirmations off (or on — your choice) and set Site URL to your Vercel domain
 
 ## Vercel Deployment
 
@@ -85,3 +86,11 @@ All tables use Supabase RLS. Key patterns:
 ## Styling
 
 Tailwind CSS v4 via `@tailwindcss/vite` plugin. Custom design tokens defined in `tailwind.config.js` as `warm` and `rose` colour palettes. Component classes (`.btn-primary`, `.card`, `.input-field`, etc.) defined in `src/index.css` `@layer components`. Font: Inter (Google Fonts, loaded in `index.html`). Target: iPhone, mobile-first.
+
+## Instructions for interacting with users
+
+Leesh is not a developer. Please make sure every to do list is detailed and does not miss a step or assume she understands the process. She is starting from scratch.
+
+## Additional Tasks
+
+After completing each task, [CLAUDE.md](CLAUDE.md), [ROADMAP.md](../ROADMAP.md) and [README.md](../README.md) should be updated to reflect all changes.

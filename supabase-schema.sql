@@ -302,9 +302,27 @@ create table if not exists public.rate_cards (
   -- Step 1
   name text not null,
   instagram_handle text not null,
-  niche text not null,
+  niche jsonb not null default '[]',
   follower_count integer not null,
   engagement_rate numeric(5,2) not null,
+  -- Instagram insights
+  interactions_period text not null default '30',
+  avg_interactions integer,
+  avg_video_views integer,
+  avg_profile_visits integer,
+  avg_accounts_reached integer,
+  audience_female_pct numeric(5,1),
+  audience_male_pct numeric(5,1),
+  top_country text,
+  top_country_pct numeric(5,1),
+  country_2 text,
+  country_2_pct numeric(5,1),
+  country_3 text,
+  country_3_pct numeric(5,1),
+  content_mix_reels_pct numeric(5,1),
+  content_mix_stories_pct numeric(5,1),
+  content_mix_posts_pct numeric(5,1),
+  stats_updated_at timestamptz,
   -- Step 2: content types (stored as JSON array)
   content_types jsonb not null default '[]',
   -- Step 3: collaboration prefs

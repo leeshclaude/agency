@@ -74,8 +74,11 @@ export function generateRateCardPDF(form) {
   doc.text('AUDIENCE OVERVIEW', MARGIN, y)
   y += 5
 
+  // Niche — may be array or string
+  const nicheValue = Array.isArray(form.niche) ? form.niche.join(', ') : (form.niche || '—')
+
   const mainCols = [
-    { label: 'Niche', value: form.niche },
+    { label: 'Niche', value: nicheValue },
     { label: 'Followers', value: parseInt(form.follower_count || 0).toLocaleString() },
     { label: 'Engagement Rate', value: `${form.engagement_rate}%` },
   ]
@@ -87,20 +90,33 @@ export function generateRateCardPDF(form) {
     doc.setTextColor(...LIGHT)
     doc.setFont('helvetica', 'normal')
     doc.text(label, x, y + 6)
-    doc.setFontSize(13)
+    doc.setFontSize(i === 0 && nicheValue.length > 18 ? 9 : 13)
     doc.setTextColor(...DARK)
     doc.setFont('helvetica', 'bold')
-    doc.text(value, x, y + 13)
+    // Truncate niche if too long for column
+    const displayValue = i === 0 && nicheValue.length > 22
+      ? nicheValue.substring(0, 20) + '…'
+      : value
+    doc.text(displayValue, x, y + 13)
   })
   y += 20
 
   // Instagram stats (only render if any are filled in)
   const statCols = [
-    form.avg_interactions && { label: 'Avg. Interactions', value: parseInt(form.avg_interactions).toLocaleString() },
+    form.avg_interactions && {
+      label: `Avg. Interactions (${form.interactions_period || 30}d)`,
+      value: parseInt(form.avg_interactions).toLocaleString(),
+    },
     form.avg_video_views && { label: 'Avg. Video Views', value: parseInt(form.avg_video_views).toLocaleString() },
     form.avg_profile_visits && { label: 'Profile Visits/mo', value: parseInt(form.avg_profile_visits).toLocaleString() },
     form.avg_accounts_reached && { label: 'Accounts Reached/mo', value: parseInt(form.avg_accounts_reached).toLocaleString() },
-    form.top_country && { label: 'Top Audience', value: form.top_country },
+    (form.audience_female_pct || form.audience_male_pct) && {
+      label: 'Audience Gender',
+      value: [
+        form.audience_female_pct && `${form.audience_female_pct}% F`,
+        form.audience_male_pct && `${form.audience_male_pct}% M`,
+      ].filter(Boolean).join(' · '),
+    },
   ].filter(Boolean)
 
   if (statCols.length > 0) {
@@ -120,6 +136,63 @@ export function generateRateCardPDF(form) {
       doc.text(value, x, rowY + 10)
     })
     y += Math.ceil(statCols.length / 3) * 16 + 4
+  }
+
+  // ── Top audience countries ────────────────────
+  const countries = [
+    form.top_country && { name: form.top_country, pct: form.top_country_pct },
+    form.country_2 && { name: form.country_2, pct: form.country_2_pct },
+    form.country_3 && { name: form.country_3, pct: form.country_3_pct },
+  ].filter(Boolean)
+
+  if (countries.length > 0) {
+    const countryColW = CONTENT_W / countries.length
+    doc.setFontSize(8)
+    doc.setTextColor(...LIGHT)
+    doc.setFont('helvetica', 'normal')
+    doc.text('Top Audience Countries', MARGIN, y + 4)
+    y += 6
+    countries.forEach(({ name, pct }, i) => {
+      const x = MARGIN + i * countryColW
+      doc.setFontSize(8)
+      doc.setTextColor(...LIGHT)
+      doc.setFont('helvetica', 'normal')
+      doc.text(pct ? `${pct}%` : '', x, y + 4)
+      doc.setFontSize(11)
+      doc.setTextColor(...DARK)
+      doc.setFont('helvetica', 'bold')
+      doc.text(name, x, y + 10)
+    })
+    y += 16
+  }
+
+  // ── Content mix ───────────────────────────────
+  const hasMix = form.content_mix_reels_pct || form.content_mix_stories_pct || form.content_mix_posts_pct
+  if (hasMix) {
+    const mixItems = [
+      form.content_mix_reels_pct && { label: 'Reels', value: `${form.content_mix_reels_pct}%` },
+      form.content_mix_stories_pct && { label: 'Stories', value: `${form.content_mix_stories_pct}%` },
+      form.content_mix_posts_pct && { label: 'Posts', value: `${form.content_mix_posts_pct}%` },
+    ].filter(Boolean)
+
+    const mixColW = CONTENT_W / mixItems.length
+    doc.setFontSize(8)
+    doc.setTextColor(...LIGHT)
+    doc.setFont('helvetica', 'normal')
+    doc.text('Content Mix', MARGIN, y + 4)
+    y += 6
+    mixItems.forEach(({ label, value }, i) => {
+      const x = MARGIN + i * mixColW
+      doc.setFontSize(8)
+      doc.setTextColor(...LIGHT)
+      doc.setFont('helvetica', 'normal')
+      doc.text(label, x, y + 4)
+      doc.setFontSize(13)
+      doc.setTextColor(...DARK)
+      doc.setFont('helvetica', 'bold')
+      doc.text(value, x, y + 11)
+    })
+    y += 16
   }
 
   doc.setDrawColor(...DIVIDER)
