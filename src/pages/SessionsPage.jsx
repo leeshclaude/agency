@@ -19,7 +19,7 @@ export default function SessionsPage() {
   async function fetchData() {
     setLoading(true)
     const [{ data: sess }, { data: myRegs }] = await Promise.all([
-      supabase.from('sessions').select('*').order('session_date', { ascending: true }),
+      supabase.from('sessions_safe').select('*').order('session_date', { ascending: true }),
       supabase.from('session_registrations').select('session_id').eq('user_id', profile.id),
     ])
 

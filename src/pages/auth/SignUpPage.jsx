@@ -121,17 +121,22 @@ export default function SignUpPage() {
     }
 
     // Notify admin — fire and forget, don't block the signup flow
-    fetch('/api/notify-admin', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        full_name: form.full_name.trim(),
-        instagram_handle: handle.trim(),
-        instagram_followers: parseInt(form.instagram_followers),
-        location_state: form.location_state,
-        location_city: form.location_city.trim(),
-        email: form.email.trim().toLowerCase(),
-      }),
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      fetch('/api/notify-admin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(session ? { 'Authorization': `Bearer ${session.access_token}` } : {}),
+        },
+        body: JSON.stringify({
+          full_name: form.full_name.trim(),
+          instagram_handle: handle.trim(),
+          instagram_followers: parseInt(form.instagram_followers),
+          location_state: form.location_state,
+          location_city: form.location_city.trim(),
+          email: form.email.trim().toLowerCase(),
+        }),
+      }).catch(() => {})
     }).catch(() => {})
 
     navigate('/pending')

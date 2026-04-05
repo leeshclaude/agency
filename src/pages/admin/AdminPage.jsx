@@ -63,9 +63,13 @@ export default function AdminPage() {
 
     if (status === 'approved' && profile?.email) {
       try {
+        const { data: { session } } = await supabase.auth.getSession()
         await fetch('/api/notify-member-approved', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            ...(session ? { 'Authorization': `Bearer ${session.access_token}` } : {}),
+          },
           body: JSON.stringify({
             full_name: profile.full_name,
             instagram_handle: profile.instagram_handle,

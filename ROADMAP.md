@@ -38,6 +38,7 @@
 - [x] Rate card: fix PDF niche text overflow — wraps full-width when long
 - [x] Rate card: add "Other" niche option with free-text write-in field (supports multiple custom niches)
 - [x] Rate card: PDF visual redesign — branded header, stat cards, compact demographics table, pricing table with rose accents, green/red collab prefs, polished footer
+- [x] Security hardening — blocked is_admin/status self-escalation via DB trigger, added auth token verification to API endpoints, HTML-escaped email templates, protected meeting links at DB level via sessions_safe view
 - [ ] Home feed: announcements support image and file attachments
 - [ ] Home feed: resource cards support image and file attachments
 - [ ] Replace placeholder app icons with real branding (192×192 and 512×512 PNG) — files exist in public/icons/, need real artwork

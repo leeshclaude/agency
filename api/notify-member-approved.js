@@ -1,9 +1,52 @@
 // Vercel serverless function — sends a welcome email to a member when admin approves them.
 // Called from AdminPage when the Approve button is clicked.
 
+import { createClient } from '@supabase/supabase-js'
+
+function escapeHtml(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
+  }
+
+  // Verify the caller is an authenticated Supabase user
+  const authHeader = req.headers.authorization
+  if (!authHeader?.startsWith('Bearer ')) {
+    return res.status(401).json({ error: 'Unauthorized' })
+  }
+  const token = authHeader.slice(7)
+
+  const supabase = createClient(
+    process.env.VITE_SUPABASE_URL,
+    process.env.VITE_SUPABASE_ANON_KEY
+  )
+  const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+  if (authError || !user) {
+    return res.status(401).json({ error: 'Unauthorized' })
+  }
+
+  // Verify the caller is an admin — query with the user's own JWT so RLS applies
+  const supabaseAsUser = createClient(
+    process.env.VITE_SUPABASE_URL,
+    process.env.VITE_SUPABASE_ANON_KEY,
+    { global: { headers: { Authorization: `Bearer ${token}` } } }
+  )
+  const { data: callerProfile } = await supabaseAsUser
+    .from('profiles')
+    .select('is_admin')
+    .eq('id', user.id)
+    .single()
+
+  if (!callerProfile?.is_admin) {
+    return res.status(403).json({ error: 'Forbidden' })
   }
 
   const apiKey = process.env.RESEND_API_KEY
@@ -16,8 +59,12 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing required fields' })
   }
 
-  const firstName = full_name.split(' ')[0]
-  const handle = instagram_handle?.startsWith('@') ? instagram_handle : `@${instagram_handle}`
+  // Escape all user-supplied values before inserting into HTML
+  const safeName = escapeHtml(full_name)
+  const safeHandle = escapeHtml(instagram_handle?.startsWith('@') ? instagram_handle : `@${instagram_handle}`)
+  const safeEmail = escapeHtml(email)
+  const firstName = escapeHtml(full_name.split(' ')[0])
+
   const appUrl = process.env.VITE_APP_URL || 'https://agency-bice-omega.vercel.app'
 
   const html = `
@@ -41,7 +88,7 @@ export default async function handler(req, res) {
         </a>
         <hr style="margin: 28px 0; border: none; border-top: 1px solid #ece4dc;" />
         <p style="margin: 0; font-size: 13px; color: #b09d8a; line-height: 1.5;">
-          You signed up as <strong style="color: #6e5e4f;">${handle}</strong>. If you have any questions, just reply to this email.
+          You signed up as <strong style="color: #6e5e4f;">${safeHandle}</strong>. If you have any questions, just reply to this email.
         </p>
       </div>
     </div>
@@ -55,7 +102,7 @@ export default async function handler(req, res) {
     },
     body: JSON.stringify({
       from: 'The Mama Edit <onboarding@resend.dev>',
-      to: email,
+      to: safeEmail,
       subject: `You're approved, ${firstName}! Welcome to The Mama Edit 🌸`,
       html,
     }),
