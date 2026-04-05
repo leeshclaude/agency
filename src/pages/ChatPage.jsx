@@ -72,6 +72,33 @@ export default function ChatPage() {
     return () => supabase.removeChannel(channel)
   }, [])
 
+  // Realtime: reactions added/removed by other users
+  useEffect(() => {
+    const reactChannel = supabase
+      .channel('public:message_reactions')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'message_reactions' }, (payload) => {
+        if (payload.new.user_id === profile.id) return // already handled optimistically
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === payload.new.message_id
+              ? { ...m, reactions: [...(m.reactions || []), payload.new] }
+              : m
+          )
+        )
+      })
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'message_reactions' }, (payload) => {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === payload.old.message_id
+              ? { ...m, reactions: (m.reactions || []).filter((r) => r.id !== payload.old.id) }
+              : m
+          )
+        )
+      })
+      .subscribe()
+    return () => supabase.removeChannel(reactChannel)
+  }, [])
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
@@ -83,7 +110,8 @@ export default function ChatPage() {
       .from('messages')
       .select(`
         id, content, created_at, user_id, channel, is_pinned,
-        profiles:user_id (full_name, instagram_handle, avatar_url, is_admin)
+        profiles:user_id (full_name, instagram_handle, avatar_url, is_admin),
+        reactions:message_reactions (id, emoji, user_id)
       `)
       .eq('channel', ch)
       .order('created_at', { ascending: true })
@@ -98,7 +126,8 @@ export default function ChatPage() {
       .from('messages')
       .select(`
         id, content, created_at, user_id, channel, is_pinned,
-        profiles:user_id (full_name, instagram_handle, avatar_url, is_admin)
+        profiles:user_id (full_name, instagram_handle, avatar_url, is_admin),
+        reactions:message_reactions (id, emoji, user_id)
       `)
       .eq('id', id)
       .single()
@@ -221,6 +250,36 @@ export default function ChatPage() {
       .eq('channel', activeChannel)
       .eq('is_pinned', true)
     setMessages((prev) => prev.map((m) => ({ ...m, is_pinned: false })))
+  }
+
+  async function toggleReaction(messageId, emoji) {
+    const msg = messages.find((m) => m.id === messageId)
+    const existing = msg?.reactions?.find((r) => r.emoji === emoji && r.user_id === profile.id)
+    if (existing) {
+      await supabase.from('message_reactions').delete().eq('id', existing.id)
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === messageId
+            ? { ...m, reactions: m.reactions.filter((r) => r.id !== existing.id) }
+            : m
+        )
+      )
+    } else {
+      const { data } = await supabase
+        .from('message_reactions')
+        .insert({ message_id: messageId, user_id: profile.id, emoji })
+        .select()
+        .single()
+      if (data) {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === messageId
+              ? { ...m, reactions: [...(m.reactions || []), data] }
+              : m
+          )
+        )
+      }
+    }
   }
 
   // Group consecutive messages from the same sender
@@ -482,6 +541,9 @@ export default function ChatPage() {
                             canPin={isAdmin}
                             onDelete={() => deleteMessage(msg.id)}
                             onPin={() => pinMessage(msg.id)}
+                            reactions={msg.reactions || []}
+                            currentUserId={profile.id}
+                            onReact={(emoji) => toggleReaction(msg.id, emoji)}
                           />
                         )
                       })}
@@ -911,13 +973,14 @@ function DMAdminThread({ profile }) {
   )
 }
 
-function MessageBubble({ message, isOwn, isFirst, isLast, canDelete, canPin, onDelete, onPin }) {
+const QUICK_REACTIONS = ['❤️', '😂', '😮', '😢', '👏', '🔥']
+
+function MessageBubble({ message, isOwn, isFirst, isLast, canDelete, canPin, onDelete, onPin, reactions, currentUserId, onReact }) {
   const [showActions, setShowActions] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const longPressTimer = useRef(null)
 
   function handleTouchStart() {
-    if (!canDelete && !canPin) return
     longPressTimer.current = setTimeout(() => setShowActions(true), 500)
   }
 
@@ -934,6 +997,15 @@ function MessageBubble({ message, isOwn, isFirst, isLast, canDelete, canPin, onD
       setConfirmDelete(true)
     }
   }
+
+  // Group reactions by emoji
+  const grouped = {}
+  for (const r of (reactions || [])) {
+    if (!grouped[r.emoji]) grouped[r.emoji] = { count: 0, hasReacted: false }
+    grouped[r.emoji].count++
+    if (r.user_id === currentUserId) grouped[r.emoji].hasReacted = true
+  }
+  const hasReactions = Object.keys(grouped).length > 0
 
   const radius = 18
   const sharp = 5
@@ -957,13 +1029,69 @@ function MessageBubble({ message, isOwn, isFirst, isLast, canDelete, canPin, onD
 
   return (
     <div
-      className="flex items-center gap-2"
-      onMouseEnter={() => (canDelete || canPin) && setShowActions(true)}
+      style={{ position: 'relative', display: 'inline-block', maxWidth: '100%' }}
+      onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => { setShowActions(false); setConfirmDelete(false) }}
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
       onTouchMove={handleTouchEnd}
     >
+      {/* Floating emoji picker — appears above bubble on hover/long-press */}
+      {showActions && (
+        <div
+          className="absolute z-20 flex items-center gap-0.5 px-2 py-1.5 rounded-full"
+          style={{
+            background: '#fff',
+            border: '1px solid #f0e8e4',
+            boxShadow: '0 2px 12px rgba(0,0,0,0.12)',
+            bottom: 'calc(100% + 6px)',
+            [isOwn ? 'right' : 'left']: 0,
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {QUICK_REACTIONS.map((e) => (
+            <button
+              key={e}
+              onClick={() => { onReact(e); setShowActions(false) }}
+              onTouchEnd={(ev) => { ev.preventDefault(); onReact(e); setShowActions(false) }}
+              className="transition-transform active:scale-125"
+              style={{ fontSize: 22, lineHeight: 1, padding: '0 2px' }}
+            >
+              {e}
+            </button>
+          ))}
+          {(canPin || canDelete) && (
+            <>
+              <div style={{ width: 1, height: 22, background: '#f0e8e4', margin: '0 4px' }} />
+              {canPin && (
+                <button
+                  onClick={() => { onPin(); setShowActions(false) }}
+                  onTouchEnd={(ev) => { ev.preventDefault(); onPin(); setShowActions(false) }}
+                  className="text-xs px-2 py-1 rounded-lg"
+                  style={{ background: '#f5f0ec', color: '#8e7a68' }}
+                >
+                  📌
+                </button>
+              )}
+              {canDelete && (
+                <button
+                  onClick={handleDelete}
+                  onTouchEnd={(ev) => { ev.preventDefault(); handleDelete() }}
+                  className="text-xs px-2 py-1 rounded-lg"
+                  style={{
+                    background: confirmDelete ? '#dc2626' : '#fee2e2',
+                    color: confirmDelete ? '#fff' : '#dc2626',
+                  }}
+                >
+                  {confirmDelete ? 'Sure?' : '✕'}
+                </button>
+              )}
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Message bubble */}
       <div
         className="px-3.5 py-2 text-sm leading-relaxed"
         style={isOwn ? ownStyle : otherStyle}
@@ -971,32 +1099,25 @@ function MessageBubble({ message, isOwn, isFirst, isLast, canDelete, canPin, onD
         {message.content}
       </div>
 
-      {showActions && (
-        <div className="flex items-center gap-1 flex-shrink-0">
-          {canPin && (
+      {/* Reaction pills */}
+      {hasReactions && (
+        <div className={`flex flex-wrap gap-1 mt-1 ${isOwn ? 'justify-end' : 'justify-start'}`}>
+          {Object.entries(grouped).map(([emoji, { count, hasReacted }]) => (
             <button
-              onClick={onPin}
-              onTouchEnd={(e) => { e.preventDefault(); onPin(); setShowActions(false) }}
-              className="text-xs px-2 py-1 rounded-lg"
-              style={{ background: '#f5f0ec', color: '#8e7a68' }}
-              title="Pin message"
-            >
-              📌
-            </button>
-          )}
-          {canDelete && (
-            <button
-              onClick={handleDelete}
-              onTouchEnd={(e) => { e.preventDefault(); handleDelete() }}
-              className="text-xs px-2 py-1 rounded-lg"
+              key={emoji}
+              onClick={() => onReact(emoji)}
+              className="flex items-center gap-0.5 rounded-full text-xs font-medium transition-all"
               style={{
-                background: confirmDelete ? '#dc2626' : '#fee2e2',
-                color: confirmDelete ? '#fff' : '#dc2626',
+                background: hasReacted ? '#edd5cc' : '#f5f0ec',
+                border: `1px solid ${hasReacted ? '#c9a99a' : 'transparent'}`,
+                color: '#302820',
+                fontSize: 12,
+                padding: '2px 8px',
               }}
             >
-              {confirmDelete ? 'Sure?' : '✕'}
+              {emoji} {count}
             </button>
-          )}
+          ))}
         </div>
       )}
     </div>
