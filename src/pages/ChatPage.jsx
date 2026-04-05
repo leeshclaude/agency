@@ -1031,45 +1031,58 @@ function DMAdminThread({ profile }) {
 const QUICK_REACTIONS = ['❤️', '😂', '😮', '😢', '👏', '🔥']
 
 function MessageBubble({ message, isOwn, isFirst, isLast, canDelete, canPin, onDelete, onPin, reactions, currentUserId, onReact }) {
-  const [showActions, setShowActions] = useState(false)
-  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [showMenu, setShowMenu] = useState(false)
+  const [copyDone, setCopyDone] = useState(false)
   const longPressTimer = useRef(null)
-  const wrapperRef = useRef(null)
+  const menuRef = useRef(null)
 
-  // Close picker when clicking outside
+  // Close menu when tapping outside
   useEffect(() => {
-    if (!showActions) return
-    function handleClickOutside(e) {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
-        setShowActions(false)
-        setConfirmDelete(false)
+    if (!showMenu) return
+    function onOutside(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setShowMenu(false)
       }
     }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [showActions])
-
-  function handleBubbleClick() {
-    setShowActions((v) => !v)
-    if (showActions) setConfirmDelete(false)
-  }
+    document.addEventListener('mousedown', onOutside)
+    document.addEventListener('touchstart', onOutside)
+    return () => {
+      document.removeEventListener('mousedown', onOutside)
+      document.removeEventListener('touchstart', onOutside)
+    }
+  }, [showMenu])
 
   function handleTouchStart() {
-    longPressTimer.current = setTimeout(() => setShowActions(true), 500)
+    longPressTimer.current = setTimeout(() => setShowMenu(true), 450)
   }
 
   function handleTouchEnd() {
     clearTimeout(longPressTimer.current)
   }
 
-  function handleDelete() {
-    if (confirmDelete) {
-      onDelete()
-      setShowActions(false)
-      setConfirmDelete(false)
-    } else {
-      setConfirmDelete(true)
-    }
+  function handleBubbleClick(e) {
+    e.stopPropagation()
+    setShowMenu((v) => !v)
+  }
+
+  async function handleCopy(e) {
+    e.stopPropagation()
+    try { await navigator.clipboard.writeText(message.content) } catch {}
+    setCopyDone(true)
+    setShowMenu(false)
+    setTimeout(() => setCopyDone(false), 2000)
+  }
+
+  function handleDelete(e) {
+    e.stopPropagation()
+    onDelete()
+    setShowMenu(false)
+  }
+
+  function handlePin(e) {
+    e.stopPropagation()
+    onPin()
+    setShowMenu(false)
   }
 
   // Group reactions by emoji
@@ -1103,64 +1116,73 @@ function MessageBubble({ message, isOwn, isFirst, isLast, canDelete, canPin, onD
 
   return (
     <div
-      ref={wrapperRef}
+      ref={menuRef}
       style={{ position: 'relative', display: 'inline-block', maxWidth: '100%' }}
-      onClick={handleBubbleClick}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-      onTouchMove={handleTouchEnd}
     >
-      {/* Floating emoji picker — appears above bubble on hover/long-press */}
-      {showActions && (
+      {/* Context menu — appears above bubble on tap/long-press */}
+      {showMenu && (
         <div
-          className="absolute z-20 flex items-center gap-0.5 px-2 py-1.5 rounded-full"
+          className="absolute z-30"
           style={{
-            background: '#fff',
-            border: '1px solid #f0e8e4',
-            boxShadow: '0 2px 12px rgba(0,0,0,0.12)',
-            bottom: 'calc(100% + 6px)',
+            bottom: 'calc(100% + 8px)',
             [isOwn ? 'right' : 'left']: 0,
-            whiteSpace: 'nowrap',
+            background: '#fff',
+            borderRadius: 16,
+            boxShadow: '0 4px 24px rgba(0,0,0,0.14)',
+            border: '1px solid #f0e8e4',
+            overflow: 'hidden',
+            minWidth: 220,
           }}
+          onClick={(e) => e.stopPropagation()}
         >
-          {QUICK_REACTIONS.map((e) => (
+          {/* Quick reactions row */}
+          <div
+            className="flex items-center justify-between px-3 py-2.5"
+            style={{ borderBottom: '1px solid #f5f0ec' }}
+          >
+            {QUICK_REACTIONS.map((e) => (
+              <button
+                key={e}
+                onClick={(ev) => { ev.stopPropagation(); onReact(e); setShowMenu(false) }}
+                onTouchEnd={(ev) => { ev.preventDefault(); onReact(e); setShowMenu(false) }}
+                className="transition-transform active:scale-125"
+                style={{ fontSize: 24, lineHeight: 1 }}
+              >
+                {e}
+              </button>
+            ))}
+          </div>
+
+          {/* Action rows */}
+          <button
+            onClick={handleCopy}
+            className="w-full flex items-center justify-between px-4 py-3 text-sm active:bg-gray-50 transition-colors"
+            style={{ color: '#302820' }}
+          >
+            <span>{copyDone ? 'Copied!' : 'Copy'}</span>
+            <span style={{ fontSize: 16 }}>📋</span>
+          </button>
+
+          {canPin && (
             <button
-              key={e}
-              onClick={() => { onReact(e); setShowActions(false) }}
-              onTouchEnd={(ev) => { ev.preventDefault(); onReact(e); setShowActions(false) }}
-              className="transition-transform active:scale-125"
-              style={{ fontSize: 22, lineHeight: 1, padding: '0 2px' }}
+              onClick={handlePin}
+              className="w-full flex items-center justify-between px-4 py-3 text-sm active:bg-gray-50 transition-colors"
+              style={{ color: '#302820', borderTop: '1px solid #f5f0ec' }}
             >
-              {e}
+              <span>{message.is_pinned ? 'Unpin' : 'Pin'}</span>
+              <span style={{ fontSize: 16 }}>📌</span>
             </button>
-          ))}
-          {(canPin || canDelete) && (
-            <>
-              <div style={{ width: 1, height: 22, background: '#f0e8e4', margin: '0 4px' }} />
-              {canPin && (
-                <button
-                  onClick={() => { onPin(); setShowActions(false) }}
-                  onTouchEnd={(ev) => { ev.preventDefault(); onPin(); setShowActions(false) }}
-                  className="text-xs px-2 py-1 rounded-lg"
-                  style={{ background: '#f5f0ec', color: '#8e7a68' }}
-                >
-                  📌
-                </button>
-              )}
-              {canDelete && (
-                <button
-                  onClick={handleDelete}
-                  onTouchEnd={(ev) => { ev.preventDefault(); handleDelete() }}
-                  className="text-xs px-2 py-1 rounded-lg"
-                  style={{
-                    background: confirmDelete ? '#dc2626' : '#fee2e2',
-                    color: confirmDelete ? '#fff' : '#dc2626',
-                  }}
-                >
-                  {confirmDelete ? 'Sure?' : '✕'}
-                </button>
-              )}
-            </>
+          )}
+
+          {canDelete && (
+            <button
+              onClick={handleDelete}
+              className="w-full flex items-center justify-between px-4 py-3 text-sm active:bg-red-50 transition-colors"
+              style={{ color: '#dc2626', borderTop: '1px solid #f5f0ec' }}
+            >
+              <span>Delete</span>
+              <span style={{ fontSize: 16 }}>🗑️</span>
+            </button>
           )}
         </div>
       )}
@@ -1169,6 +1191,10 @@ function MessageBubble({ message, isOwn, isFirst, isLast, canDelete, canPin, onD
       <div
         className="px-3.5 py-2 text-sm leading-relaxed"
         style={isOwn ? ownStyle : otherStyle}
+        onClick={handleBubbleClick}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        onTouchMove={handleTouchEnd}
       >
         {message.content}
       </div>
@@ -1179,7 +1205,7 @@ function MessageBubble({ message, isOwn, isFirst, isLast, canDelete, canPin, onD
           {Object.entries(grouped).map(([emoji, { count, hasReacted }]) => (
             <button
               key={emoji}
-              onClick={() => onReact(emoji)}
+              onClick={(e) => { e.stopPropagation(); onReact(emoji) }}
               className="flex items-center gap-0.5 rounded-full text-xs font-medium transition-all"
               style={{
                 background: hasReacted ? '#edd5cc' : '#f5f0ec',
