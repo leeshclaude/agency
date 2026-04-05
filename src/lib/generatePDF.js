@@ -2,12 +2,13 @@ import jsPDF from 'jspdf'
 
 const CONTENT_TYPE_LABELS = {
   reels: 'Reels',
-  static_post: 'Static image post',
-  carousel: 'Carousel post',
-  stories: 'Instagram Stories (set of 3)',
-  highlights: 'Highlights cover creation',
-  ugc_video: 'UGC video (brand-use rights)',
-  ugc_photo: 'UGC photo (brand-use rights)',
+  static_post: 'Single Post',
+  carousel: 'Carousel',
+  stories: 'Stories (set of 3)',
+  highlights: 'Pin to Highlights',
+  ugc_video: 'Raw footage',
+  ugc_photo: 'Raw images',
+  commercial_usage: 'Commercial Usage',
 }
 
 function getSuggestedRate(followers) {

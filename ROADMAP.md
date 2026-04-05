@@ -20,6 +20,7 @@
 - [x] Chat extras — admin badge on messages, pinned messages per channel, delete button always right-aligned
 - [x] Rate card v2 — niche multi-select, interactions period dropdown (30/60/90d), gender split (M/F %), top 3 audience countries with %, content mix (Reels/Stories/Posts %), stats last-updated timestamp
 - [x] Approval email — branded welcome email sent to member via Resend when admin clicks Approve
+- [x] Rate card content types updated — Reels, Single Post, Carousel, Stories (set of 3), Pin to Highlights, Raw footage, Raw images, Commercial Usage
 
 ---
 

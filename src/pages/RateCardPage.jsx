@@ -7,12 +7,13 @@ const NICHES = ['Lifestyle', 'Motherhood', 'Home', 'Wellness', 'Fashion', 'Food'
 
 const CONTENT_TYPES = [
   { key: 'reels', label: 'Reels' },
-  { key: 'static_post', label: 'Static image post' },
-  { key: 'carousel', label: 'Carousel post' },
-  { key: 'stories', label: 'Instagram Stories (set of 3)' },
-  { key: 'highlights', label: 'Highlights cover creation' },
-  { key: 'ugc_video', label: 'UGC video (brand-use rights)' },
-  { key: 'ugc_photo', label: 'UGC photo (brand-use rights)' },
+  { key: 'static_post', label: 'Single Post' },
+  { key: 'carousel', label: 'Carousel' },
+  { key: 'stories', label: 'Stories (set of 3)' },
+  { key: 'highlights', label: 'Pin to Highlights' },
+  { key: 'ugc_video', label: 'Raw footage' },
+  { key: 'ugc_photo', label: 'Raw images' },
+  { key: 'commercial_usage', label: 'Commercial Usage' },
 ]
 
 const STEPS = ['Your Details', 'Content', 'Preferences', 'Pricing', 'Preview']
