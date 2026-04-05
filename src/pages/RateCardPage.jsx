@@ -32,6 +32,11 @@ const INITIAL_FORM = {
   niche: 'Lifestyle',
   follower_count: '',
   engagement_rate: '',
+  avg_interactions: '',
+  avg_video_views: '',
+  avg_profile_visits: '',
+  avg_accounts_reached: '',
+  top_country: '',
   // Step 2
   content_types: [],
   // Step 3
@@ -74,6 +79,11 @@ export default function RateCardPage() {
         niche: data.niche,
         follower_count: data.follower_count,
         engagement_rate: data.engagement_rate,
+        avg_interactions: data.avg_interactions || '',
+        avg_video_views: data.avg_video_views || '',
+        avg_profile_visits: data.avg_profile_visits || '',
+        avg_accounts_reached: data.avg_accounts_reached || '',
+        top_country: data.top_country || '',
         content_types: data.content_types || [],
         open_to_gifted: data.open_to_gifted,
         gifted_min_value: data.gifted_min_value || '',
@@ -162,6 +172,11 @@ export default function RateCardPage() {
       open_to_whitelisting: form.open_to_whitelisting,
       excluded_categories: form.excluded_categories.trim() || null,
       custom_rates: form.custom_rates,
+      avg_interactions: parseInt(form.avg_interactions) || null,
+      avg_video_views: parseInt(form.avg_video_views) || null,
+      avg_profile_visits: parseInt(form.avg_profile_visits) || null,
+      avg_accounts_reached: parseInt(form.avg_accounts_reached) || null,
+      top_country: form.top_country.trim() || null,
     }
 
     let err
@@ -329,6 +344,73 @@ function Step1({ form, setField }) {
           max="100"
           step="0.1"
         />
+      </div>
+
+      {/* Instagram stats section */}
+      <div className="pt-2">
+        <p className="text-sm font-semibold mb-1" style={{ color: '#302820' }}>Instagram Insights (optional)</p>
+        <p className="text-xs mb-4" style={{ color: '#b09d8a' }}>
+          Find these in your Instagram app under Professional Dashboard → Account Insights. Adding them makes your rate card more compelling to brands.
+        </p>
+        <div className="space-y-4">
+          <div className="flex gap-3">
+            <div className="flex-1">
+              <label className="block text-xs font-medium mb-1.5" style={{ color: '#4e4238' }}>Avg. interactions per post</label>
+              <input
+                className="input-field"
+                type="number"
+                min="0"
+                value={form.avg_interactions}
+                onChange={(e) => setField('avg_interactions', e.target.value)}
+                placeholder="e.g. 320"
+              />
+            </div>
+            <div className="flex-1">
+              <label className="block text-xs font-medium mb-1.5" style={{ color: '#4e4238' }}>Avg. video views</label>
+              <input
+                className="input-field"
+                type="number"
+                min="0"
+                value={form.avg_video_views}
+                onChange={(e) => setField('avg_video_views', e.target.value)}
+                placeholder="e.g. 4500"
+              />
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <div className="flex-1">
+              <label className="block text-xs font-medium mb-1.5" style={{ color: '#4e4238' }}>Avg. profile visits/month</label>
+              <input
+                className="input-field"
+                type="number"
+                min="0"
+                value={form.avg_profile_visits}
+                onChange={(e) => setField('avg_profile_visits', e.target.value)}
+                placeholder="e.g. 1200"
+              />
+            </div>
+            <div className="flex-1">
+              <label className="block text-xs font-medium mb-1.5" style={{ color: '#4e4238' }}>Avg. accounts reached/month</label>
+              <input
+                className="input-field"
+                type="number"
+                min="0"
+                value={form.avg_accounts_reached}
+                onChange={(e) => setField('avg_accounts_reached', e.target.value)}
+                placeholder="e.g. 18000"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-medium mb-1.5" style={{ color: '#4e4238' }}>Top audience country</label>
+            <input
+              className="input-field"
+              value={form.top_country}
+              onChange={(e) => setField('top_country', e.target.value)}
+              placeholder="e.g. Australia"
+            />
+          </div>
+        </div>
       </div>
     </>
   )
@@ -543,7 +625,7 @@ function Step5({ form }) {
           <h2 className="text-xl font-semibold" style={{ color: '#302820' }}>{form.name}</h2>
           <p style={{ color: '#8e7a68' }}>{handle}</p>
 
-          <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+          <div className="mt-4 grid grid-cols-3 gap-x-3 gap-y-3 text-sm">
             <div>
               <span className="section-label" style={{ fontSize: 10 }}>Niche</span>
               <p className="font-medium" style={{ color: '#302820' }}>{form.niche}</p>
@@ -558,6 +640,36 @@ function Step5({ form }) {
               <span className="section-label" style={{ fontSize: 10 }}>Engagement</span>
               <p className="font-medium" style={{ color: '#302820' }}>{form.engagement_rate}%</p>
             </div>
+            {form.avg_interactions && (
+              <div>
+                <span className="section-label" style={{ fontSize: 10 }}>Avg. Interactions</span>
+                <p className="font-medium" style={{ color: '#302820' }}>{parseInt(form.avg_interactions).toLocaleString()}</p>
+              </div>
+            )}
+            {form.avg_video_views && (
+              <div>
+                <span className="section-label" style={{ fontSize: 10 }}>Avg. Video Views</span>
+                <p className="font-medium" style={{ color: '#302820' }}>{parseInt(form.avg_video_views).toLocaleString()}</p>
+              </div>
+            )}
+            {form.avg_profile_visits && (
+              <div>
+                <span className="section-label" style={{ fontSize: 10 }}>Profile Visits/mo</span>
+                <p className="font-medium" style={{ color: '#302820' }}>{parseInt(form.avg_profile_visits).toLocaleString()}</p>
+              </div>
+            )}
+            {form.avg_accounts_reached && (
+              <div>
+                <span className="section-label" style={{ fontSize: 10 }}>Accounts Reached/mo</span>
+                <p className="font-medium" style={{ color: '#302820' }}>{parseInt(form.avg_accounts_reached).toLocaleString()}</p>
+              </div>
+            )}
+            {form.top_country && (
+              <div>
+                <span className="section-label" style={{ fontSize: 10 }}>Top Audience</span>
+                <p className="font-medium" style={{ color: '#302820' }}>{form.top_country}</p>
+              </div>
+            )}
           </div>
 
           <div className="mt-5">

@@ -74,14 +74,14 @@ export function generateRateCardPDF(form) {
   doc.text('AUDIENCE OVERVIEW', MARGIN, y)
   y += 5
 
-  const cols = [
+  const mainCols = [
     { label: 'Niche', value: form.niche },
     { label: 'Followers', value: parseInt(form.follower_count || 0).toLocaleString() },
     { label: 'Engagement Rate', value: `${form.engagement_rate}%` },
   ]
 
-  const colW = CONTENT_W / cols.length
-  cols.forEach(({ label, value }, i) => {
+  const colW = CONTENT_W / mainCols.length
+  mainCols.forEach(({ label, value }, i) => {
     const x = MARGIN + i * colW
     doc.setFontSize(8)
     doc.setTextColor(...LIGHT)
@@ -93,6 +93,34 @@ export function generateRateCardPDF(form) {
     doc.text(value, x, y + 13)
   })
   y += 20
+
+  // Instagram stats (only render if any are filled in)
+  const statCols = [
+    form.avg_interactions && { label: 'Avg. Interactions', value: parseInt(form.avg_interactions).toLocaleString() },
+    form.avg_video_views && { label: 'Avg. Video Views', value: parseInt(form.avg_video_views).toLocaleString() },
+    form.avg_profile_visits && { label: 'Profile Visits/mo', value: parseInt(form.avg_profile_visits).toLocaleString() },
+    form.avg_accounts_reached && { label: 'Accounts Reached/mo', value: parseInt(form.avg_accounts_reached).toLocaleString() },
+    form.top_country && { label: 'Top Audience', value: form.top_country },
+  ].filter(Boolean)
+
+  if (statCols.length > 0) {
+    const statColW = CONTENT_W / Math.min(statCols.length, 3)
+    statCols.forEach(({ label, value }, i) => {
+      const row = Math.floor(i / 3)
+      const col = i % 3
+      const x = MARGIN + col * statColW
+      const rowY = y + row * 16
+      doc.setFontSize(8)
+      doc.setTextColor(...LIGHT)
+      doc.setFont('helvetica', 'normal')
+      doc.text(label, x, rowY + 4)
+      doc.setFontSize(11)
+      doc.setTextColor(...DARK)
+      doc.setFont('helvetica', 'bold')
+      doc.text(value, x, rowY + 10)
+    })
+    y += Math.ceil(statCols.length / 3) * 16 + 4
+  }
 
   doc.setDrawColor(...DIVIDER)
   doc.line(MARGIN, y, W - MARGIN, y)
