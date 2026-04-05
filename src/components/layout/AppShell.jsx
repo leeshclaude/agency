@@ -73,7 +73,7 @@ export default function AppShell({ children }) {
   }
 
   return (
-    <div style={{ background: '#faf8f6', minHeight: '100svh' }}>
+    <div style={{ background: '#FEF9FB', minHeight: '100svh' }}>
       <main>{children}</main>
       <BottomNav chatUnread={totalUnread} />
     </div>

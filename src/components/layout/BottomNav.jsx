@@ -13,8 +13,8 @@ export default function BottomNav({ chatUnread = 0 }) {
     <nav
       className="fixed bottom-0 left-0 right-0 z-40"
       style={{
-        background: '#fff',
-        borderTop: '1px solid #ece4dc',
+        background: '#FEF9FB',
+        borderTop: '1px solid #FAE8EF',
         paddingBottom: 'env(safe-area-inset-bottom)',
       }}
     >
@@ -30,7 +30,7 @@ export default function BottomNav({ chatUnread = 0 }) {
               }`
             }
             style={({ isActive }) => ({
-              color: isActive ? '#c9a99a' : '#b09d8a',
+              color: isActive ? '#D4688A' : '#6B4A57',
             })}
           >
             {({ isActive }) => (
@@ -41,7 +41,7 @@ export default function BottomNav({ chatUnread = 0 }) {
                     <span
                       className="absolute -top-1 -right-1 flex items-center justify-center rounded-full font-semibold"
                       style={{
-                        background: '#c9a99a',
+                        background: '#D4688A',
                         color: '#fff',
                         fontSize: 9,
                         minWidth: 15,
@@ -54,7 +54,13 @@ export default function BottomNav({ chatUnread = 0 }) {
                     </span>
                   )}
                 </div>
-                <span style={{ fontSize: 10, fontWeight: isActive ? 600 : 400 }}>{label}</span>
+                <span style={{
+                  fontSize: 9,
+                  fontFamily: 'Josefin Sans, sans-serif',
+                  fontWeight: isActive ? 700 : 400,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.06em',
+                }}>{label}</span>
               </>
             )}
           </NavLink>

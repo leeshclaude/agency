@@ -4,33 +4,32 @@ export default {
   theme: {
     extend: {
       colors: {
-        rose: {
-          50: '#fdf8f6',
-          100: '#f7ede8',
-          200: '#edd5cc',
-          300: '#deb8ab',
-          400: '#c9a99a',
-          500: '#b58f80',
-          600: '#9a7060',
-          700: '#7d5548',
-          800: '#5e3e35',
-          900: '#3d2820',
+        blossom: {
+          DEFAULT: '#F2A7BE',
+          light:   '#FAE8EF',
+          deep:    '#D4688A',
+          dark:    '#8C3A55',
         },
-        warm: {
-          50: '#faf8f6',
-          100: '#f5f0ec',
-          200: '#ece4dc',
-          300: '#ddd2c7',
-          400: '#c8b8a8',
-          500: '#b09d8a',
-          600: '#8e7a68',
-          700: '#6e5e4f',
-          800: '#4e4238',
-          900: '#302820',
+        petal:        '#FDF4F7',
+        bark: {
+          DEFAULT: '#2C1A22',
+          soft:    '#6B4A57',
         },
+        cream:        '#FAF7F5',
+        'warm-white': '#FEF9FB',
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        headline: ['Josefin Sans', 'sans-serif'],
+        body:     ['DM Sans', 'sans-serif'],
+        sans:     ['DM Sans', 'sans-serif'],
+      },
+      letterSpacing: {
+        headline: '0.18em',
+        label:    '0.20em',
+        wide:     '0.14em',
+      },
+      borderRadius: {
+        brand: '12px',
       },
     },
   },
