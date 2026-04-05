@@ -38,8 +38,24 @@ function getSuggestedRateForType(followers, typeKey) {
   return { min, max }
 }
 
-export function generateRateCardPDF(form) {
+export async function generateRateCardPDF(form, avatarUrl) {
   const doc = new jsPDF({ unit: 'mm', format: 'a4' })
+
+  // Load avatar image if available
+  let avatarDataUrl = null
+  if (avatarUrl) {
+    try {
+      const res = await fetch(avatarUrl)
+      const blob = await res.blob()
+      avatarDataUrl = await new Promise((resolve) => {
+        const reader = new FileReader()
+        reader.onload = () => resolve(reader.result)
+        reader.readAsDataURL(blob)
+      })
+    } catch {
+      // silently skip — PDF will render without photo
+    }
+  }
 
   const W = 210
   const MARGIN = 18
@@ -88,6 +104,11 @@ export function generateRateCardPDF(form) {
   doc.setTextColor(...WHITE)
   doc.text(handle, MARGIN, 36)
 
+  // Make handle a clickable Instagram link
+  const igUrl = `https://www.instagram.com/${handle.replace('@', '')}`
+  const handleW = doc.getTextWidth(handle)
+  doc.link(MARGIN, 32, handleW, 6, { url: igUrl })
+
   // Niche tags
   const nicheArr = Array.isArray(form.niche) ? [...form.niche] : (form.niche ? [form.niche] : [])
   const nicheText = nicheArr
@@ -97,6 +118,28 @@ export function generateRateCardPDF(form) {
     doc.setFontSize(8)
     doc.setTextColor(...WHITE)
     doc.text(nicheText, MARGIN, 43)
+  }
+
+  // Avatar — circular crop, top-right of header
+  if (avatarDataUrl) {
+    const AV = 26       // diameter mm
+    const ax = W - MARGIN - AV  // left edge of image
+    const ay = 10       // top edge of image
+    const cx = ax + AV / 2
+    const cy = ay + AV / 2
+    const r  = AV / 2
+
+    // Clip to circle then draw image
+    doc.saveGraphicsState()
+    doc.circle(cx, cy, r, null)
+    doc.clip()
+    doc.addImage(avatarDataUrl, 'JPEG', ax, ay, AV, AV, '', 'FAST')
+    doc.restoreGraphicsState()
+
+    // White ring border
+    doc.setDrawColor(...WHITE)
+    doc.setLineWidth(1.2)
+    doc.circle(cx, cy, r, 'S')
   }
 
   y = 55

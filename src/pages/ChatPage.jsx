@@ -519,8 +519,8 @@ export default function ChatPage() {
           </div>
         )}
 
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto px-4 py-4">
+        {/* Messages — pt-48 gives first bubble room for context menu above it */}
+        <div className="flex-1 overflow-y-auto px-4 pt-48 pb-4">
           <div className="max-w-lg mx-auto space-y-4">
             {loading ? (
               <div className="text-center py-12" style={{ color: '#6B4A57' }}>Loading…</div>

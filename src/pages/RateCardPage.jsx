@@ -273,7 +273,7 @@ export default function RateCardPage() {
   async function handleDownload() {
     const ok = await save()
     if (!ok) return
-    generateRateCardPDF(form)
+    await generateRateCardPDF(form, profile.avatar_url || null)
   }
 
   if (loading) {
