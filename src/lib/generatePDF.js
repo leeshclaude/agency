@@ -46,27 +46,24 @@ export function generateRateCardPDF(form) {
   const CONTENT_W = W - MARGIN * 2
 
   // ── Palette ───────────────────────────────────
-  const ROSE       = [201, 169, 154]
-  const ROSE_DARK  = [172, 138, 121]
-  const ROSE_LIGHT = [237, 213, 204]
-  const ROSE_BG    = [253, 246, 243]
-  const DARK       = [48, 40, 32]
-  const MID        = [110, 94, 79]
-  const LIGHT      = [160, 140, 122]
-  const BG         = [250, 248, 246]
-  const BORDER     = [228, 218, 208]
-  const GREEN      = [90, 145, 80]
-  const RED_SOFT   = [185, 85, 70]
-  const WHITE      = [255, 255, 255]
+  const BLOSSOM       = [242, 167, 190]   // #F2A7BE
+  const BLOSSOM_DEEP  = [212, 104, 138]   // #D4688A
+  const BLOSSOM_LIGHT = [250, 232, 239]   // #FAE8EF
+  const PETAL         = [253, 244, 247]   // #FDF4F7
+  const BARK          = [44, 26, 34]      // #2C1A22
+  const BARK_SOFT     = [107, 74, 87]     // #6B4A57
+  const WARM_WHITE    = [254, 249, 251]   // #FEF9FB
+  const BORDER        = [250, 232, 239]   // #FAE8EF (soft)
+  const WHITE         = [255, 255, 255]
 
   let y = 0
 
   // ── HEADER BLOCK ─────────────────────────────
-  doc.setFillColor(...ROSE)
+  doc.setFillColor(...BLOSSOM)
   doc.rect(0, 0, W, 48, 'F')
-  doc.setFillColor(...ROSE_DARK)
+  doc.setFillColor(...BLOSSOM_DEEP)
   doc.rect(0, 0, W, 4, 'F')
-  doc.setFillColor(...ROSE_LIGHT)
+  doc.setFillColor(...BLOSSOM_LIGHT)
   doc.rect(0, 44, W, 4, 'F')
 
   // Brand labels
@@ -106,16 +103,16 @@ export function generateRateCardPDF(form) {
 
   // ── Helpers ───────────────────────────────────
   function sectionHeader(title, subtitle) {
-    doc.setFillColor(...ROSE)
+    doc.setFillColor(...BLOSSOM_DEEP)
     doc.rect(MARGIN, y, 3, 5.5, 'F')
     doc.setFontSize(8.5)
-    doc.setTextColor(...DARK)
+    doc.setTextColor(...BARK)
     doc.setFont('helvetica', 'bold')
     doc.text(title, MARGIN + 6, y + 4.5)
     if (subtitle) {
       doc.setFontSize(7.5)
       doc.setFont('helvetica', 'normal')
-      doc.setTextColor(...LIGHT)
+      doc.setTextColor(...BARK_SOFT)
       doc.text(subtitle, W - MARGIN, y + 4.5, { align: 'right' })
     }
     y += 8
@@ -126,19 +123,19 @@ export function generateRateCardPDF(form) {
   const GAP = 3
 
   function statCard(x, cardY, w, label, value) {
-    doc.setFillColor(...ROSE_BG)
+    doc.setFillColor(...PETAL)
     doc.roundedRect(x, cardY, w, CARD_H, 2, 2, 'F')
     doc.setDrawColor(...BORDER)
     doc.setLineWidth(0.25)
     doc.roundedRect(x, cardY, w, CARD_H, 2, 2, 'S')
     // Label — darker and bolder
     doc.setFontSize(7.5)
-    doc.setTextColor(...MID)
+    doc.setTextColor(...BARK_SOFT)
     doc.setFont('helvetica', 'bold')
     doc.text(label, x + 4, cardY + 5.5)
     // Value — large bold dark
     doc.setFontSize(13)
-    doc.setTextColor(...DARK)
+    doc.setTextColor(...BARK)
     doc.setFont('helvetica', 'bold')
     doc.text(String(value), x + 4, cardY + 12.5)
   }
@@ -225,17 +222,17 @@ export function generateRateCardPDF(form) {
     demoRows.forEach(({ label, value }, i) => {
       const rowY = y + i * ROW_H
       if (i % 2 === 0) {
-        doc.setFillColor(...BG)
+        doc.setFillColor(...WARM_WHITE)
         doc.rect(MARGIN, rowY, CONTENT_W, ROW_H, 'F')
       }
       // Label
       doc.setFontSize(8)
-      doc.setTextColor(...MID)
+      doc.setTextColor(...BARK_SOFT)
       doc.setFont('helvetica', 'bold')
       doc.text(label, MARGIN + 4, rowY + 5.5)
       // Value
       doc.setFontSize(8.5)
-      doc.setTextColor(...DARK)
+      doc.setTextColor(...BARK)
       doc.setFont('helvetica', 'normal')
       doc.text(value, W - MARGIN - 4, rowY + 5.5, { align: 'right' })
     })
@@ -257,7 +254,7 @@ export function generateRateCardPDF(form) {
   const selectedTypes = form.content_types || []
 
   // Table header row
-  doc.setFillColor(...ROSE)
+  doc.setFillColor(...BLOSSOM_DEEP)
   doc.rect(MARGIN, y, CONTENT_W, 8, 'F')
   doc.setFontSize(8.5)
   doc.setTextColor(...WHITE)
@@ -278,19 +275,19 @@ export function generateRateCardPDF(form) {
     const rowY = y + i * ROW_H
 
     if (i % 2 === 0) {
-      doc.setFillColor(...BG)
+      doc.setFillColor(...WARM_WHITE)
       doc.rect(MARGIN, rowY, CONTENT_W, ROW_H, 'F')
     }
-    doc.setFillColor(...ROSE_LIGHT)
+    doc.setFillColor(...BLOSSOM_LIGHT)
     doc.rect(MARGIN, rowY, 1.5, ROW_H, 'F')
 
     doc.setFontSize(9.5)
-    doc.setTextColor(...DARK)
+    doc.setTextColor(...BARK)
     doc.setFont('helvetica', 'normal')
     doc.text(label, MARGIN + 6, rowY + 5.8)
 
     doc.setFont('helvetica', 'bold')
-    doc.setTextColor(...ROSE_DARK)
+    doc.setTextColor(...BLOSSOM_DEEP)
     doc.text(rateStr, W - MARGIN - 5, rowY + 5.8, { align: 'right' })
   })
 
@@ -322,21 +319,19 @@ export function generateRateCardPDF(form) {
     const rowY = y + i * ROW_H
 
     if (i % 2 === 0) {
-      doc.setFillColor(...BG)
+      doc.setFillColor(...WARM_WHITE)
       doc.rect(MARGIN, rowY, CONTENT_W, ROW_H, 'F')
     }
 
     doc.setFontSize(9)
-    doc.setTextColor(...MID)
+    doc.setTextColor(...BARK_SOFT)
     doc.setFont('helvetica', 'normal')
     doc.text(label, MARGIN + 5, rowY + 5.5)
 
     const isYes = value === 'Yes'
-    const isNo = value === 'No'
     doc.setFont('helvetica', 'bold')
-    if (isYes) doc.setTextColor(...GREEN)
-    else if (isNo) doc.setTextColor(...RED_SOFT)
-    else doc.setTextColor(...DARK)
+    if (isYes) doc.setTextColor(...BLOSSOM_DEEP)
+    else doc.setTextColor(...BARK)
     doc.text(value, W - MARGIN - 5, rowY + 5.5, { align: 'right' })
   })
 
@@ -348,9 +343,9 @@ export function generateRateCardPDF(form) {
 
   // ── FOOTER ────────────────────────────────────
   const footerY = 284
-  doc.setFillColor(...ROSE_DARK)
+  doc.setFillColor(...BLOSSOM_DEEP)
   doc.rect(0, footerY, W, 3, 'F')
-  doc.setFillColor(...ROSE)
+  doc.setFillColor(...BLOSSOM)
   doc.rect(0, footerY + 3, W, 11, 'F')
 
   const monthYear = new Date().toLocaleDateString('en-AU', { month: 'long', year: 'numeric' })
