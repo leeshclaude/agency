@@ -8,7 +8,7 @@ const NAV = [
   { to: '/settings', label: 'Settings', icon: SettingsIcon },
 ]
 
-export default function BottomNav() {
+export default function BottomNav({ chatUnread = 0 }) {
   return (
     <nav
       className="fixed bottom-0 left-0 right-0 z-40"
@@ -35,7 +35,25 @@ export default function BottomNav() {
           >
             {({ isActive }) => (
               <>
-                <Icon size={22} active={isActive} />
+                <div className="relative">
+                  <Icon size={22} active={isActive} />
+                  {label === 'Chat' && chatUnread > 0 && (
+                    <span
+                      className="absolute -top-1 -right-1 flex items-center justify-center rounded-full font-semibold"
+                      style={{
+                        background: '#c9a99a',
+                        color: '#fff',
+                        fontSize: 9,
+                        minWidth: 15,
+                        height: 15,
+                        padding: '0 3px',
+                        lineHeight: '15px',
+                      }}
+                    >
+                      {chatUnread > 9 ? '9+' : chatUnread}
+                    </span>
+                  )}
+                </div>
                 <span style={{ fontSize: 10, fontWeight: isActive ? 600 : 400 }}>{label}</span>
               </>
             )}
