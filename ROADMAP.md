@@ -28,7 +28,7 @@
 
 - [x] Login/signup validation — replaced red error banner with inline required field indicators (red asterisk on labels, red border on field, error text below each field)
 - [x] Admin back button — added back button in admin console header to return to Settings
-- [ ] Chat unread badges — show notification bubbles on chat tabs when there are unread messages, like Instagram
+- [x] Chat unread badges — pink badge with count on channel tabs for unread messages, clears when you open that channel
 - [ ] Chat tab redesign — vertical channel list on the left (Instagram DM style), each showing unread count, launches into selected chat
 - [ ] DM admin — members can send a direct message to admin from within the app
 - [x] Instagram profile links — clickable IG handle links in admin approval panel (to verify AU location + followers) and in chat messages (so members can follow each other)

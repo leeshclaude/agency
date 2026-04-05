@@ -17,6 +17,7 @@ export default function ChatPage() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(true)
   const [sending, setSending] = useState(false)
+  const [unreadCounts, setUnreadCounts] = useState({})
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
   const activeChannelRef = useRef(activeChannel)
@@ -30,6 +31,10 @@ export default function ChatPage() {
   }, [activeChannel])
 
   useEffect(() => {
+    loadUnreadCounts()
+  }, [])
+
+  useEffect(() => {
     const channel = supabase
       .channel('public:messages')
       .on(
@@ -39,6 +44,13 @@ export default function ChatPage() {
           if (payload.eventType === 'INSERT') {
             if (payload.new.channel === activeChannelRef.current) {
               fetchNewMessage(payload.new.id)
+              markChannelReadInDB(activeChannelRef.current)
+            } else if (payload.new.user_id !== profile.id) {
+              // Increment unread badge for channels the user isn't currently viewing
+              setUnreadCounts((c) => ({
+                ...c,
+                [payload.new.channel]: (c[payload.new.channel] || 0) + 1,
+              }))
             }
           } else if (payload.eventType === 'UPDATE') {
             // Update is_pinned in real time for all users
@@ -92,6 +104,52 @@ export default function ChatPage() {
       if (prev.find((m) => m.id === data.id)) return prev
       return [...prev, data]
     })
+  }
+
+  async function loadUnreadCounts() {
+    // Get last-read timestamps for all channels
+    const { data: reads } = await supabase
+      .from('channel_reads')
+      .select('channel, last_read_at')
+      .eq('user_id', profile.id)
+
+    const readMap = {}
+    if (reads) reads.forEach((r) => { readMap[r.channel] = r.last_read_at })
+
+    // Count unread messages per non-active channel
+    const counts = {}
+    for (const ch of CHANNELS) {
+      if (ch.id === activeChannelRef.current) {
+        counts[ch.id] = 0
+        continue
+      }
+      const readAt = readMap[ch.id] || profile.created_at || '1970-01-01T00:00:00Z'
+      const { count } = await supabase
+        .from('messages')
+        .select('*', { count: 'exact', head: true })
+        .eq('channel', ch.id)
+        .neq('user_id', profile.id)
+        .gt('created_at', readAt)
+      counts[ch.id] = count || 0
+    }
+
+    setUnreadCounts(counts)
+    // Mark active channel as read in DB
+    await markChannelReadInDB(activeChannelRef.current)
+  }
+
+  async function markChannelReadInDB(channelId) {
+    await supabase.from('channel_reads').upsert(
+      { user_id: profile.id, channel: channelId, last_read_at: new Date().toISOString() },
+      { onConflict: 'user_id,channel' }
+    )
+  }
+
+  function switchChannel(channelId) {
+    setActiveChannel(channelId)
+    setInput('')
+    setUnreadCounts((c) => ({ ...c, [channelId]: 0 }))
+    markChannelReadInDB(channelId)
   }
 
   async function sendMessage(e) {
@@ -170,11 +228,12 @@ export default function ChatPage() {
         <div className="flex">
           {CHANNELS.map((ch) => {
             const isActive = ch.id === activeChannel
+            const unread = unreadCounts[ch.id] || 0
             return (
               <button
                 key={ch.id}
-                onClick={() => { setActiveChannel(ch.id); setInput('') }}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-sm font-medium transition-all"
+                onClick={() => switchChannel(ch.id)}
+                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-sm font-medium transition-all relative"
                 style={{
                   color: isActive ? '#c9a99a' : '#b09d8a',
                   borderBottom: isActive ? '2px solid #c9a99a' : '2px solid transparent',
@@ -184,6 +243,22 @@ export default function ChatPage() {
               >
                 <span>{ch.emoji}</span>
                 <span>{ch.label}</span>
+                {unread > 0 && (
+                  <span
+                    className="inline-flex items-center justify-center rounded-full font-semibold"
+                    style={{
+                      background: '#c9a99a',
+                      color: '#fff',
+                      fontSize: 10,
+                      minWidth: 16,
+                      height: 16,
+                      padding: '0 4px',
+                      lineHeight: '16px',
+                    }}
+                  >
+                    {unread > 9 ? '9+' : unread}
+                  </span>
+                )}
               </button>
             )
           })}
