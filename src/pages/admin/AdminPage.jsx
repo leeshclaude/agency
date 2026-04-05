@@ -181,7 +181,15 @@ function MemberCard({ profile, actions, actioning }) {
               <span className="badge-approved text-xs">Admin</span>
             )}
           </div>
-          <p className="text-sm mt-0.5" style={{ color: '#8e7a68' }}>{profile.instagram_handle}</p>
+          <a
+            href={`https://instagram.com/${profile.instagram_handle?.replace('@', '')}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm mt-0.5 inline-block"
+            style={{ color: '#c9a99a' }}
+          >
+            {profile.instagram_handle} ↗
+          </a>
           <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs" style={{ color: '#8e7a68' }}>
             <span>📧 {profile.email}</span>
             <span>👥 {profile.instagram_followers?.toLocaleString()} followers</span>

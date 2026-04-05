@@ -31,7 +31,7 @@
 - [ ] Chat unread badges — show notification bubbles on chat tabs when there are unread messages, like Instagram
 - [ ] Chat tab redesign — vertical channel list on the left (Instagram DM style), each showing unread count, launches into selected chat
 - [ ] DM admin — members can send a direct message to admin from within the app
-- [ ] Instagram profile links — clickable IG handle links in admin approval panel (to verify AU location + followers) and in chat messages (so members can follow each other)
+- [x] Instagram profile links — clickable IG handle links in admin approval panel (to verify AU location + followers) and in chat messages (so members can follow each other)
 - [ ] Replace placeholder app icons with real branding (192×192 and 512×512 PNG) — files exist in public/icons/, need real artwork
 - [ ] Rename "The Mama Edit" to final community name throughout the app
 - [ ] Set a custom domain name in Vercel

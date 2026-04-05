@@ -267,7 +267,17 @@ export default function ChatPage() {
                             Admin
                           </span>
                         )}
-                        <span className="text-xs" style={{ color: '#b09d8a' }}>{handle}</span>
+                        {handle && (
+                          <a
+                            href={`https://instagram.com/${handle.replace('@', '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs"
+                            style={{ color: '#c9a99a' }}
+                          >
+                            {handle} ↗
+                          </a>
+                        )}
                       </div>
                     )}
 
