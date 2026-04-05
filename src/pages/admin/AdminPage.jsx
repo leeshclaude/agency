@@ -176,97 +176,142 @@ export default function AdminPage() {
         </div>
       </div>
 
-      <div className="max-w-2xl mx-auto px-4 py-6 space-y-3">
-        {loading && tab !== 'DMs' ? (
-          <div className="text-center py-12" style={{ color: '#b09d8a' }}>Loading…</div>
-        ) : tab === 'DMs' ? (
-          activeDm ? (
-            // DM thread view
-            <div>
+      {/* DMs tab — full width, IG-style, no container padding */}
+      {tab === 'DMs' && (
+        activeDm ? (
+          // ── Thread view ──────────────────────────────────
+          <div className="flex flex-col" style={{ height: 'calc(100vh - 140px)' }}>
+            {/* Thread header */}
+            <div
+              className="flex items-center gap-3 px-4 py-3 flex-shrink-0"
+              style={{ background: '#fff', borderBottom: '1px solid #ece4dc' }}
+            >
               <button
                 onClick={() => { setActiveDm(null); setDmMessages([]) }}
-                className="flex items-center gap-1 text-sm mb-4"
+                className="text-sm font-medium flex-shrink-0"
                 style={{ color: '#b09d8a' }}
               >
-                ← Back to messages
+                ←
               </button>
-              <div className="flex items-center gap-3 mb-4 p-3 card">
-                <Avatar avatarUrl={activeDm.avatar_url} name={activeDm.full_name} size={36} />
-                <div>
-                  <p className="font-medium text-sm" style={{ color: '#302820' }}>{activeDm.full_name}</p>
-                  <p className="text-xs" style={{ color: '#8e7a68' }}>{activeDm.instagram_handle}</p>
-                </div>
-              </div>
-              <div className="space-y-3 mb-4" style={{ maxHeight: '50vh', overflowY: 'auto' }}>
-                {dmLoading ? (
-                  <p className="text-center text-sm py-8" style={{ color: '#b09d8a' }}>Loading…</p>
-                ) : dmMessages.map((msg) => {
-                  const isAdmin = msg.sender?.is_admin
-                  return (
-                    <div key={msg.id} className={`flex gap-2 ${isAdmin ? 'flex-row-reverse' : 'flex-row'} items-end`}>
-                      <div className={`flex flex-col gap-0.5 ${isAdmin ? 'items-end' : 'items-start'}`}>
-                        <div
-                          className="px-3.5 py-2 text-sm leading-relaxed"
-                          style={{
-                            background: isAdmin ? '#c9a99a' : '#fff',
-                            color: isAdmin ? '#fff' : '#302820',
-                            border: isAdmin ? 'none' : '1px solid #ece4dc',
-                            borderRadius: isAdmin ? '18px 18px 5px 18px' : '18px 18px 18px 5px',
-                            maxWidth: 280,
-                          }}
-                        >
-                          {msg.content}
-                        </div>
-                        <span className="text-xs px-1" style={{ color: '#b09d8a' }}>
-                          {new Date(msg.created_at).toLocaleTimeString('en-AU', { hour: 'numeric', minute: '2-digit' })}
-                        </span>
-                      </div>
-                    </div>
-                  )
-                })}
-                <div ref={dmBottomRef} />
-              </div>
-              <form onSubmit={sendDmReply} className="flex gap-2">
-                <input
-                  className="input-field flex-1"
-                  value={dmInput}
-                  onChange={(e) => setDmInput(e.target.value)}
-                  placeholder={`Reply to ${activeDm.full_name}…`}
-                  autoComplete="off"
-                />
-                <button
-                  type="submit"
-                  disabled={!dmInput.trim() || dmSending}
-                  className="btn-primary"
-                  style={{ width: 'auto', padding: '0 16px' }}
+              <Avatar avatarUrl={activeDm.avatar_url} name={activeDm.full_name} size={36} />
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-sm" style={{ color: '#302820' }}>{activeDm.full_name}</p>
+                <a
+                  href={`https://instagram.com/${activeDm.instagram_handle?.replace('@','')}`}
+                  target="_blank" rel="noopener noreferrer"
+                  className="text-xs" style={{ color: '#c9a99a' }}
                 >
-                  Send
-                </button>
-              </form>
+                  {activeDm.instagram_handle} ↗
+                </a>
+              </div>
             </div>
-          ) : (
-            // DM conversation list
-            dmConversations.length === 0 ? (
+
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
+              {dmLoading ? (
+                <p className="text-center text-sm py-8" style={{ color: '#b09d8a' }}>Loading…</p>
+              ) : dmMessages.length === 0 ? (
+                <p className="text-center text-sm py-8" style={{ color: '#b09d8a' }}>No messages yet</p>
+              ) : dmMessages.map((msg) => {
+                const fromAdmin = msg.sender?.is_admin
+                return (
+                  <div key={msg.id} className={`flex gap-2 ${fromAdmin ? 'flex-row-reverse' : 'flex-row'} items-end`}>
+                    {!fromAdmin && (
+                      <Avatar avatarUrl={activeDm.avatar_url} name={activeDm.full_name} size={28} />
+                    )}
+                    <div className={`flex flex-col gap-0.5 ${fromAdmin ? 'items-end' : 'items-start'}`}>
+                      <div
+                        className="px-3.5 py-2.5 text-sm leading-relaxed"
+                        style={{
+                          background: fromAdmin ? '#c9a99a' : '#f5f0ec',
+                          color: fromAdmin ? '#fff' : '#302820',
+                          borderRadius: fromAdmin ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
+                          maxWidth: 260,
+                        }}
+                      >
+                        {msg.content}
+                      </div>
+                      <span className="text-xs px-1" style={{ color: '#b09d8a' }}>
+                        {new Date(msg.created_at).toLocaleTimeString('en-AU', { hour: 'numeric', minute: '2-digit' })}
+                      </span>
+                    </div>
+                  </div>
+                )
+              })}
+              <div ref={dmBottomRef} />
+            </div>
+
+            {/* Reply input */}
+            <form
+              onSubmit={sendDmReply}
+              className="flex-shrink-0 flex gap-2 px-4 py-3"
+              style={{ background: '#fff', borderTop: '1px solid #ece4dc' }}
+            >
+              <input
+                className="input-field flex-1"
+                value={dmInput}
+                onChange={(e) => setDmInput(e.target.value)}
+                placeholder={`Reply to ${activeDm.full_name}…`}
+                autoComplete="off"
+                style={{ paddingTop: 10, paddingBottom: 10 }}
+              />
+              <button
+                type="submit"
+                disabled={!dmInput.trim() || dmSending}
+                className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-all"
+                style={{
+                  background: dmInput.trim() ? '#c9a99a' : '#ece4dc',
+                  color: dmInput.trim() ? '#fff' : '#b09d8a',
+                }}
+              >
+                <svg width={16} height={16} viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="22" y1="2" x2="11" y2="13" />
+                  <polygon points="22,2 15,22 11,13 2,9" />
+                </svg>
+              </button>
+            </form>
+          </div>
+        ) : (
+          // ── Inbox list ───────────────────────────────────
+          <div>
+            {dmConversations.length === 0 ? (
               <EmptyState icon="💌" text="No member messages yet" />
             ) : (
               dmConversations.map((convo) => (
                 <button
                   key={convo.member_id}
                   onClick={() => setActiveDm(convo.profiles)}
-                  className="card p-4 w-full text-left flex items-center gap-3"
+                  className="w-full flex items-center gap-3 px-4 py-4 transition-all active:bg-gray-50"
+                  style={{ borderBottom: '1px solid #f5f0ec', background: '#fff' }}
                 >
-                  <Avatar avatarUrl={convo.profiles?.avatar_url} name={convo.profiles?.full_name} size={40} />
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm" style={{ color: '#302820' }}>{convo.profiles?.full_name}</p>
-                    <p className="text-xs truncate mt-0.5" style={{ color: '#8e7a68' }}>{convo.content}</p>
+                  <Avatar avatarUrl={convo.profiles?.avatar_url} name={convo.profiles?.full_name} size={48} />
+                  <div className="flex-1 min-w-0 text-left">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="font-semibold text-sm" style={{ color: '#302820' }}>
+                        {convo.profiles?.full_name}
+                      </p>
+                      <span className="text-xs flex-shrink-0" style={{ color: '#b09d8a' }}>
+                        {new Date(convo.created_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })}
+                      </span>
+                    </div>
+                    <p className="text-xs mt-0.5" style={{ color: '#8e7a68' }}>
+                      {convo.profiles?.instagram_handle}
+                    </p>
+                    <p className="text-xs truncate mt-1" style={{ color: '#b09d8a' }}>
+                      {convo.content}
+                    </p>
                   </div>
-                  <span className="text-xs flex-shrink-0" style={{ color: '#b09d8a' }}>
-                    {new Date(convo.created_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })}
-                  </span>
                 </button>
               ))
-            )
-          )
+            )}
+          </div>
+        )
+      )}
+
+      <div className="max-w-2xl mx-auto px-4 py-6 space-y-3">
+        {loading && tab !== 'DMs' ? (
+          <div className="text-center py-12" style={{ color: '#b09d8a' }}>Loading…</div>
         ) : tab === 'Pending' ? (
           pending.length === 0 ? (
             <EmptyState icon="✅" text="No pending applications" />
