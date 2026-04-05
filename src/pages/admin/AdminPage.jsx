@@ -36,9 +36,26 @@ export default function AdminPage() {
     setLoading(false)
   }
 
-  async function setStatus(userId, status) {
+  async function setStatus(userId, status, profile) {
     setActioning(userId)
     await supabase.from('profiles').update({ status }).eq('id', userId)
+
+    if (status === 'approved' && profile?.email) {
+      try {
+        await fetch('/api/notify-member-approved', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            full_name: profile.full_name,
+            instagram_handle: profile.instagram_handle,
+            email: profile.email,
+          }),
+        })
+      } catch (e) {
+        console.error('Failed to send approval email:', e)
+      }
+    }
+
     await fetchAll()
     setActioning(null)
   }
@@ -100,7 +117,7 @@ export default function AdminPage() {
                 actions={
                   <>
                     <button
-                      onClick={() => setStatus(p.id, 'approved')}
+                      onClick={() => setStatus(p.id, 'approved', p)}
                       disabled={actioning === p.id}
                       className="btn-primary text-sm py-2 px-4"
                       style={{ width: 'auto' }}
@@ -108,7 +125,7 @@ export default function AdminPage() {
                       Approve
                     </button>
                     <button
-                      onClick={() => setStatus(p.id, 'denied')}
+                      onClick={() => setStatus(p.id, 'denied', p)}
                       disabled={actioning === p.id}
                       className="btn-danger text-sm py-2 px-4"
                     >
@@ -130,7 +147,7 @@ export default function AdminPage() {
                 actioning={actioning === p.id}
                 actions={
                   <button
-                    onClick={() => setStatus(p.id, 'denied')}
+                    onClick={() => setStatus(p.id, 'denied', p)}
                     disabled={actioning === p.id}
                     className="btn-danger text-sm py-2 px-4"
                   >

@@ -19,16 +19,16 @@
 - [x] Improvement 6: Chat channels — General 💬, Intro's ✨, Engagement 💕, Brand Ops 💸 (General default)
 - [x] Chat extras — admin badge on messages, pinned messages per channel, delete button always right-aligned
 - [x] Rate card v2 — niche multi-select, interactions period dropdown (30/60/90d), gender split (M/F %), top 3 audience countries with %, content mix (Reels/Stories/Posts %), stats last-updated timestamp
+- [x] Approval email — branded welcome email sent to member via Resend when admin clicks Approve
 
 ---
 
 ## Up Next
 
-- [ ] Replace placeholder app icons with real branding (192x192 and 512x512 PNG)
+- [ ] Replace placeholder app icons with real branding (192×192 and 512×512 PNG) — files exist in public/icons/, need real artwork
 - [ ] Rename "The Mama Edit" to final community name throughout the app
 - [ ] Set a custom domain name in Vercel
 - [ ] Test end-to-end member signup and approval flow with real members
-- [ ] Welcome email customisation in Supabase (sent on approval)
 
 ---
 
