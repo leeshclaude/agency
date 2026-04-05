@@ -3,10 +3,13 @@
 -- Run this in: Supabase Dashboard → SQL Editor
 -- ============================================================
 
--- Drop old policies that used is_admin() which may not work on this table
+-- Drop all existing policies on admin_dms
 drop policy if exists "Members can read own DMs" on public.admin_dms;
 drop policy if exists "Members can send DMs" on public.admin_dms;
 drop policy if exists "Admins can delete DMs" on public.admin_dms;
+drop policy if exists "Read DMs" on public.admin_dms;
+drop policy if exists "Insert DMs" on public.admin_dms;
+drop policy if exists "Delete DMs" on public.admin_dms;
 
 -- Fixed: use explicit profile lookup instead of is_admin()
 create policy "Read DMs"
