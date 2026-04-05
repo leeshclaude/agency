@@ -705,11 +705,45 @@ function AdminDMInbox({ adminProfile }) {
     setThreadLoading(true)
     const { data } = await supabase
       .from('admin_dms')
-      .select('*, sender:sender_id(full_name, avatar_url, is_admin)')
+      .select('*, sender:sender_id(full_name, avatar_url, is_admin), reactions:admin_dm_reactions(id, emoji, user_id)')
       .eq('member_id', memberId)
       .order('created_at', { ascending: true })
     if (data) setThreadMessages(data)
     setThreadLoading(false)
+  }
+
+  async function deleteDmMessage(id) {
+    await supabase.from('admin_dms').delete().eq('id', id)
+    setThreadMessages((prev) => prev.filter((m) => m.id !== id))
+  }
+
+  async function toggleDmReaction(messageId, emoji) {
+    const msg = threadMessages.find((m) => m.id === messageId)
+    const existing = msg?.reactions?.find((r) => r.emoji === emoji && r.user_id === adminProfile.id)
+    if (existing) {
+      await supabase.from('admin_dm_reactions').delete().eq('id', existing.id)
+      setThreadMessages((prev) =>
+        prev.map((m) =>
+          m.id === messageId
+            ? { ...m, reactions: m.reactions.filter((r) => r.id !== existing.id) }
+            : m
+        )
+      )
+    } else {
+      const { data } = await supabase
+        .from('admin_dm_reactions')
+        .insert({ message_id: messageId, user_id: adminProfile.id, emoji })
+        .select().single()
+      if (data) {
+        setThreadMessages((prev) =>
+          prev.map((m) =>
+            m.id === messageId
+              ? { ...m, reactions: [...(m.reactions || []), data] }
+              : m
+          )
+        )
+      }
+    }
   }
 
   async function sendReply(e) {
@@ -756,36 +790,52 @@ function AdminDMInbox({ adminProfile }) {
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto px-4 py-4">
-          <div className="max-w-lg mx-auto space-y-3">
+        <div className="flex-1 overflow-y-auto px-4 pt-48 pb-4">
+          <div className="max-w-lg mx-auto space-y-4">
             {threadLoading ? (
               <div className="text-center py-12" style={{ color: '#6B4A57' }}>Loading…</div>
-            ) : threadMessages.map((msg) => {
-              const fromAdmin = msg.sender?.is_admin
-              return (
-                <div key={msg.id} className={`flex gap-2 ${fromAdmin ? 'flex-row-reverse' : 'flex-row'} items-end`}>
-                  {!fromAdmin && (
-                    <Avatar avatarUrl={activeMember.avatar_url} name={activeMember.full_name} size={28} />
-                  )}
-                  <div className={`flex flex-col gap-0.5 ${fromAdmin ? 'items-end' : 'items-start'}`}>
-                    <div
-                      className="px-3.5 py-2.5 text-sm leading-relaxed"
-                      style={{
-                        background: fromAdmin ? '#D4688A' : '#FAE8EF',
-                        color: fromAdmin ? '#fff' : '#2C1A22',
-                        borderRadius: fromAdmin ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
-                        maxWidth: 260,
-                      }}
-                    >
-                      {msg.content}
+            ) : (() => {
+              const groups = []
+              for (const msg of threadMessages) {
+                const last = groups[groups.length - 1]
+                if (last && last.senderId === msg.sender_id) last.messages.push(msg)
+                else groups.push({ senderId: msg.sender_id, messages: [msg] })
+              }
+              return groups.map((group, gi) => {
+                const isOwn = group.senderId === adminProfile.id
+                const firstMsg = group.messages[0]
+                return (
+                  <div key={gi} className={`flex gap-2 ${isOwn ? 'flex-row-reverse' : 'flex-row'} items-end`}>
+                    {!isOwn && (
+                      <div className="flex-shrink-0">
+                        <Avatar avatarUrl={activeMember.avatar_url} name={activeMember.full_name} size={32} />
+                      </div>
+                    )}
+                    <div className={`flex flex-col gap-1 ${isOwn ? 'items-end' : 'items-start'}`}>
+                      {group.messages.map((msg, mi) => (
+                        <MessageBubble
+                          key={msg.id}
+                          message={msg}
+                          isOwn={isOwn}
+                          isFirst={mi === 0}
+                          isLast={mi === group.messages.length - 1}
+                          canDelete={true}
+                          canPin={false}
+                          onDelete={() => deleteDmMessage(msg.id)}
+                          onPin={() => {}}
+                          reactions={msg.reactions || []}
+                          currentUserId={adminProfile.id}
+                          onReact={(emoji) => toggleDmReaction(msg.id, emoji)}
+                        />
+                      ))}
+                      <span className="text-xs px-1" style={{ color: '#6B4A57' }}>
+                        {new Date(group.messages[group.messages.length - 1].created_at).toLocaleTimeString('en-AU', { hour: 'numeric', minute: '2-digit' })}
+                      </span>
                     </div>
-                    <span className="text-xs px-1" style={{ color: '#6B4A57' }}>
-                      {new Date(msg.created_at).toLocaleTimeString('en-AU', { hour: 'numeric', minute: '2-digit' })}
-                    </span>
                   </div>
-                </div>
-              )
-            })}
+                )
+              })
+            })()}
             <div ref={bottomRef} />
           </div>
         </div>
@@ -905,11 +955,45 @@ function DMAdminThread({ profile }) {
   async function fetchDMs() {
     const { data } = await supabase
       .from('admin_dms')
-      .select('*, sender:sender_id(full_name, avatar_url, is_admin)')
+      .select('*, sender:sender_id(full_name, avatar_url, is_admin), reactions:admin_dm_reactions(id, emoji, user_id)')
       .eq('member_id', profile.id)
       .order('created_at', { ascending: true })
     if (data) setMessages(data)
     setLoading(false)
+  }
+
+  async function deleteDmMessage(id) {
+    await supabase.from('admin_dms').delete().eq('id', id)
+    setMessages((prev) => prev.filter((m) => m.id !== id))
+  }
+
+  async function toggleDmReaction(messageId, emoji) {
+    const msg = messages.find((m) => m.id === messageId)
+    const existing = msg?.reactions?.find((r) => r.emoji === emoji && r.user_id === profile.id)
+    if (existing) {
+      await supabase.from('admin_dm_reactions').delete().eq('id', existing.id)
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === messageId
+            ? { ...m, reactions: m.reactions.filter((r) => r.id !== existing.id) }
+            : m
+        )
+      )
+    } else {
+      const { data } = await supabase
+        .from('admin_dm_reactions')
+        .insert({ message_id: messageId, user_id: profile.id, emoji })
+        .select().single()
+      if (data) {
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === messageId
+              ? { ...m, reactions: [...(m.reactions || []), data] }
+              : m
+          )
+        )
+      }
+    }
   }
 
   async function sendDM(e) {
@@ -941,8 +1025,8 @@ function DMAdminThread({ profile }) {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-4">
-        <div className="max-w-lg mx-auto space-y-3">
+      <div className="flex-1 overflow-y-auto px-4 pt-48 pb-4">
+        <div className="max-w-lg mx-auto space-y-4">
           {loading ? (
             <div className="text-center py-12" style={{ color: '#6B4A57' }}>Loading…</div>
           ) : messages.length === 0 ? (
@@ -953,41 +1037,51 @@ function DMAdminThread({ profile }) {
                 Send a private message and admin will get back to you.
               </p>
             </div>
-          ) : (
-            messages.map((msg) => {
-              const isOwn = msg.sender_id === profile.id
+          ) : (() => {
+            const groups = []
+            for (const msg of messages) {
+              const last = groups[groups.length - 1]
+              if (last && last.senderId === msg.sender_id) last.messages.push(msg)
+              else groups.push({ senderId: msg.sender_id, messages: [msg] })
+            }
+            return groups.map((group, gi) => {
+              const isOwn = group.senderId === profile.id
+              const firstMsg = group.messages[0]
               return (
-                <div key={msg.id} className={`flex gap-2 ${isOwn ? 'flex-row-reverse' : 'flex-row'} items-end`}>
+                <div key={gi} className={`flex gap-2 ${isOwn ? 'flex-row-reverse' : 'flex-row'} items-end`}>
                   {!isOwn && (
                     <div className="flex-shrink-0">
-                      <Avatar avatarUrl={msg.sender?.avatar_url} name={msg.sender?.full_name || 'Admin'} size={28} />
+                      <Avatar avatarUrl={firstMsg.sender?.avatar_url} name={firstMsg.sender?.full_name || 'Admin'} size={32} />
                     </div>
                   )}
-                  <div className={`flex flex-col gap-0.5 ${isOwn ? 'items-end' : 'items-start'}`}>
+                  <div className={`flex flex-col gap-1 ${isOwn ? 'items-end' : 'items-start'}`}>
                     {!isOwn && (
-                      <span className="text-xs font-medium px-1" style={{ color: '#6B4A57' }}>
-                        Admin
-                      </span>
+                      <span className="text-xs px-1" style={{ fontFamily: 'DM Sans, sans-serif', color: '#6B4A57' }}>Admin</span>
                     )}
-                    <div
-                      className="px-3.5 py-2 text-sm leading-relaxed"
-                      style={{
-                        background: isOwn ? '#D4688A' : '#FEF9FB',
-                        color: isOwn ? '#fff' : '#2C1A22',
-                        border: isOwn ? 'none' : '1px solid #FAE8EF',
-                        borderRadius: isOwn ? '18px 18px 5px 18px' : '18px 18px 18px 5px',
-                      }}
-                    >
-                      {msg.content}
-                    </div>
+                    {group.messages.map((msg, mi) => (
+                      <MessageBubble
+                        key={msg.id}
+                        message={msg}
+                        isOwn={isOwn}
+                        isFirst={mi === 0}
+                        isLast={mi === group.messages.length - 1}
+                        canDelete={isOwn}
+                        canPin={false}
+                        onDelete={() => deleteDmMessage(msg.id)}
+                        onPin={() => {}}
+                        reactions={msg.reactions || []}
+                        currentUserId={profile.id}
+                        onReact={(emoji) => toggleDmReaction(msg.id, emoji)}
+                      />
+                    ))}
                     <span className="text-xs px-1" style={{ color: '#6B4A57' }}>
-                      {new Date(msg.created_at).toLocaleTimeString('en-AU', { hour: 'numeric', minute: '2-digit' })}
+                      {new Date(group.messages[group.messages.length - 1].created_at).toLocaleTimeString('en-AU', { hour: 'numeric', minute: '2-digit' })}
                     </span>
                   </div>
                 </div>
               )
             })
-          )}
+          })()}
           <div ref={bottomRef} />
         </div>
       </div>
