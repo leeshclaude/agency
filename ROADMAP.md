@@ -41,7 +41,7 @@
 - [x] Security hardening — blocked is_admin/status self-escalation via DB trigger, added auth token verification to API endpoints, HTML-escaped email templates, protected meeting links at DB level via sessions_safe view
 - [x] Home feed: announcements support image and file attachments — image shown full-width in banner, file as download link; admin upload UI in edit mode
 - [x] Home feed: resource cards support image and file attachments — image at top of card, file as download link; admin upload in resource modal
-- [ ] Replace placeholder app icons with real branding (192×192 and 512×512 PNG) — files exist in public/icons/, need real artwork
+- [x] Replace placeholder app icons with real branding — cherry blossom flower icon in rose palette, 192×192 and 512×512 PNG; also used as browser favicon and iPhone home screen icon
 - [ ] Rename "The Mama Edit" to final community name throughout the app
 - [ ] Set a custom domain name in Vercel
 - [ ] Test end-to-end member signup and approval flow with real members
