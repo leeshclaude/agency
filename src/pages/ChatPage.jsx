@@ -12,6 +12,7 @@ const CHANNELS = [
 
 export default function ChatPage() {
   const { profile, isAdmin } = useAuth()
+  const [mode, setMode] = useState('community') // 'community' | 'dm'
   const [activeChannel, setActiveChannel] = useState('general')
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
@@ -219,13 +220,43 @@ export default function ChatPage() {
         className="flex-shrink-0 pt-12 pb-0"
         style={{ background: '#fff', borderBottom: '1px solid #ece4dc' }}
       >
-        <div className="max-w-lg mx-auto px-4 pb-3">
-          <p className="section-label mb-0.5">Community</p>
-          <h1 className="text-lg font-semibold" style={{ color: '#302820' }}>Group Chat</h1>
+        <div className="max-w-lg mx-auto px-4 pb-3 flex items-end justify-between">
+          <div>
+            <p className="section-label mb-0.5">Community</p>
+            <h1 className="text-lg font-semibold" style={{ color: '#302820' }}>
+              {mode === 'community' ? 'Group Chat' : 'Message Admin'}
+            </h1>
+          </div>
+          {/* Mode toggle */}
+          <div
+            className="flex rounded-xl overflow-hidden mb-0.5"
+            style={{ border: '1px solid #ddd2c7' }}
+          >
+            <button
+              onClick={() => setMode('community')}
+              className="px-3 py-1.5 text-xs font-medium transition-all"
+              style={{
+                background: mode === 'community' ? '#c9a99a' : '#fff',
+                color: mode === 'community' ? '#fff' : '#8e7a68',
+              }}
+            >
+              💬 Group
+            </button>
+            <button
+              onClick={() => setMode('dm')}
+              className="px-3 py-1.5 text-xs font-medium transition-all"
+              style={{
+                background: mode === 'dm' ? '#c9a99a' : '#fff',
+                color: mode === 'dm' ? '#fff' : '#8e7a68',
+              }}
+            >
+              💌 Admin
+            </button>
+          </div>
         </div>
 
-        {/* Channel tabs */}
-        <div className="flex">
+        {/* Channel tabs — community mode only */}
+        {mode === 'community' && <div className="flex">
           {CHANNELS.map((ch) => {
             const isActive = ch.id === activeChannel
             const unread = unreadCounts[ch.id] || 0
@@ -262,8 +293,16 @@ export default function ChatPage() {
               </button>
             )
           })}
-        </div>
+        </div>}
       </div>
+
+      {/* DM Admin mode */}
+      {mode === 'dm' && (
+        <DMAdminThread profile={profile} />
+      )}
+
+      {/* Community mode */}
+      {mode === 'community' && <>
 
       {/* Pinned message banner */}
       {pinnedMessage && (
@@ -424,7 +463,171 @@ export default function ChatPage() {
           </button>
         </form>
       </div>
+
+      </>}
     </div>
+  )
+}
+
+// ─────────────────────────────────────────────────
+// DM Admin Thread
+// ─────────────────────────────────────────────────
+function DMAdminThread({ profile }) {
+  const [messages, setMessages] = useState([])
+  const [input, setInput] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [sending, setSending] = useState(false)
+  const bottomRef = useRef(null)
+  const inputRef = useRef(null)
+
+  useEffect(() => {
+    fetchDMs()
+
+    const channel = supabase
+      .channel('admin_dms:member')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'admin_dms', filter: `member_id=eq.${profile.id}` },
+        (payload) => {
+          setMessages((prev) => {
+            if (prev.find((m) => m.id === payload.new.id)) return prev
+            return [...prev, { ...payload.new, sender: null }]
+          })
+          fetchDMs() // re-fetch to get sender profile
+        }
+      )
+      .subscribe()
+
+    return () => supabase.removeChannel(channel)
+  }, [])
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
+
+  async function fetchDMs() {
+    const { data } = await supabase
+      .from('admin_dms')
+      .select('*, sender:sender_id(full_name, avatar_url, is_admin)')
+      .eq('member_id', profile.id)
+      .order('created_at', { ascending: true })
+    if (data) setMessages(data)
+    setLoading(false)
+  }
+
+  async function sendDM(e) {
+    e.preventDefault()
+    const text = input.trim()
+    if (!text || sending) return
+    setSending(true)
+    setInput('')
+    await supabase.from('admin_dms').insert({
+      member_id: profile.id,
+      sender_id: profile.id,
+      content: text,
+    })
+    setSending(false)
+    inputRef.current?.focus()
+  }
+
+  return (
+    <>
+      {/* Info banner */}
+      <div
+        className="flex-shrink-0 flex items-center gap-3 px-4 py-3"
+        style={{ background: '#fdf6f3', borderBottom: '1px solid #ece4dc' }}
+      >
+        <span style={{ fontSize: 20 }}>💌</span>
+        <p className="text-xs" style={{ color: '#8e7a68' }}>
+          Private messages with The Mama Edit admin. Only you and admin can see this.
+        </p>
+      </div>
+
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto px-4 py-4">
+        <div className="max-w-lg mx-auto space-y-3">
+          {loading ? (
+            <div className="text-center py-12" style={{ color: '#b09d8a' }}>Loading…</div>
+          ) : messages.length === 0 ? (
+            <div className="text-center py-16">
+              <span style={{ fontSize: 32 }}>💌</span>
+              <p className="mt-3 text-sm font-medium" style={{ color: '#4e4238' }}>Message Admin</p>
+              <p className="mt-1 text-sm" style={{ color: '#b09d8a' }}>
+                Send a private message and admin will get back to you.
+              </p>
+            </div>
+          ) : (
+            messages.map((msg) => {
+              const isOwn = msg.sender_id === profile.id
+              return (
+                <div key={msg.id} className={`flex gap-2 ${isOwn ? 'flex-row-reverse' : 'flex-row'} items-end`}>
+                  {!isOwn && (
+                    <div className="flex-shrink-0">
+                      <Avatar avatarUrl={msg.sender?.avatar_url} name={msg.sender?.full_name || 'Admin'} size={28} />
+                    </div>
+                  )}
+                  <div className={`flex flex-col gap-0.5 ${isOwn ? 'items-end' : 'items-start'}`}>
+                    {!isOwn && (
+                      <span className="text-xs font-medium px-1" style={{ color: '#8e7a68' }}>
+                        Admin
+                      </span>
+                    )}
+                    <div
+                      className="px-3.5 py-2 text-sm leading-relaxed"
+                      style={{
+                        background: isOwn ? '#c9a99a' : '#fff',
+                        color: isOwn ? '#fff' : '#302820',
+                        border: isOwn ? 'none' : '1px solid #ece4dc',
+                        borderRadius: isOwn ? '18px 18px 5px 18px' : '18px 18px 18px 5px',
+                      }}
+                    >
+                      {msg.content}
+                    </div>
+                    <span className="text-xs px-1" style={{ color: '#b09d8a' }}>
+                      {new Date(msg.created_at).toLocaleTimeString('en-AU', { hour: 'numeric', minute: '2-digit' })}
+                    </span>
+                  </div>
+                </div>
+              )
+            })
+          )}
+          <div ref={bottomRef} />
+        </div>
+      </div>
+
+      {/* Input */}
+      <div
+        className="flex-shrink-0 px-4 py-3"
+        style={{
+          background: '#fff',
+          borderTop: '1px solid #ece4dc',
+          paddingBottom: 'calc(env(safe-area-inset-bottom) + 80px)',
+        }}
+      >
+        <form onSubmit={sendDM} className="max-w-lg mx-auto flex gap-2">
+          <input
+            ref={inputRef}
+            className="input-field flex-1"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Message admin…"
+            autoComplete="off"
+            style={{ paddingTop: 10, paddingBottom: 10 }}
+          />
+          <button
+            type="submit"
+            disabled={!input.trim() || sending}
+            className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-all active:scale-95"
+            style={{
+              background: input.trim() ? '#c9a99a' : '#ece4dc',
+              color: input.trim() ? '#fff' : '#b09d8a',
+            }}
+          >
+            <SendIcon />
+          </button>
+        </form>
+      </div>
+    </>
   )
 }
 
