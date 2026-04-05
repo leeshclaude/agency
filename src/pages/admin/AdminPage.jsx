@@ -134,37 +134,37 @@ export default function AdminPage() {
   if (isLoading || !isAdmin) return null
 
   return (
-    <div style={{ background: '#faf8f6', minHeight: '100vh' }}>
+    <div style={{ background: '#FEF9FB', minHeight: '100vh' }}>
       {/* Header */}
-      <div className="px-4 pt-12 pb-4" style={{ borderBottom: '1px solid #ece4dc', background: '#fff' }}>
+      <div className="px-4 pt-12 pb-4" style={{ borderBottom: '1px solid #FAE8EF', background: '#FEF9FB' }}>
         <div className="max-w-2xl mx-auto">
           <button
             onClick={() => navigate('/settings')}
             className="flex items-center gap-1 text-sm mb-3"
-            style={{ color: '#b09d8a' }}
+            style={{ color: '#6B4A57' }}
           >
             ← Back to Settings
           </button>
           <p className="section-label mb-1">Admin</p>
-          <h1 className="text-xl font-semibold" style={{ color: '#302820' }}>The Mama Edit</h1>
+          <h1 className="text-xl" style={{ fontFamily: 'Josefin Sans, sans-serif', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#2C1A22' }}>The Mama Edit</h1>
         </div>
       </div>
 
       {/* Tabs */}
-      <div style={{ borderBottom: '1px solid #ece4dc', background: '#fff' }}>
+      <div style={{ borderBottom: '1px solid #FAE8EF', background: '#FEF9FB' }}>
         <div className="max-w-2xl mx-auto flex">
           {TABS.map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
               className="px-5 py-3 text-sm font-medium transition-all relative"
-              style={{ color: tab === t ? '#c9a99a' : '#8e7a68' }}
+              style={{ color: tab === t ? '#D4688A' : '#6B4A57' }}
             >
               {t}
               {t === 'Pending' && pending.length > 0 && (
                 <span
                   className="ml-1.5 inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-semibold"
-                  style={{ background: '#c9a99a', color: '#fff' }}
+                  style={{ background: '#D4688A', color: '#fff' }}
                 >
                   {pending.length}
                 </span>
@@ -172,7 +172,7 @@ export default function AdminPage() {
               {tab === t && (
                 <div
                   className="absolute bottom-0 left-0 right-0 h-0.5"
-                  style={{ background: '#c9a99a' }}
+                  style={{ background: '#D4688A' }}
                 />
               )}
             </button>
@@ -188,22 +188,22 @@ export default function AdminPage() {
             {/* Thread header */}
             <div
               className="flex items-center gap-3 px-4 py-3 flex-shrink-0"
-              style={{ background: '#fff', borderBottom: '1px solid #ece4dc' }}
+              style={{ background: '#FEF9FB', borderBottom: '1px solid #FAE8EF' }}
             >
               <button
                 onClick={() => { setActiveDm(null); setDmMessages([]) }}
                 className="text-sm font-medium flex-shrink-0"
-                style={{ color: '#b09d8a' }}
+                style={{ color: '#6B4A57' }}
               >
                 ←
               </button>
               <Avatar avatarUrl={activeDm.avatar_url} name={activeDm.full_name} size={36} />
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-sm" style={{ color: '#302820' }}>{activeDm.full_name}</p>
+                <p className="font-semibold text-sm" style={{ color: '#2C1A22' }}>{activeDm.full_name}</p>
                 <a
                   href={`https://instagram.com/${activeDm.instagram_handle?.replace('@','')}`}
                   target="_blank" rel="noopener noreferrer"
-                  className="text-xs" style={{ color: '#c9a99a' }}
+                  className="text-xs" style={{ color: '#D4688A' }}
                 >
                   {activeDm.instagram_handle} ↗
                 </a>
@@ -213,9 +213,9 @@ export default function AdminPage() {
             {/* Messages */}
             <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
               {dmLoading ? (
-                <p className="text-center text-sm py-8" style={{ color: '#b09d8a' }}>Loading…</p>
+                <p className="text-center text-sm py-8" style={{ color: '#6B4A57' }}>Loading…</p>
               ) : dmMessages.length === 0 ? (
-                <p className="text-center text-sm py-8" style={{ color: '#b09d8a' }}>No messages yet</p>
+                <p className="text-center text-sm py-8" style={{ color: '#6B4A57' }}>No messages yet</p>
               ) : dmMessages.map((msg) => {
                 const fromAdmin = msg.sender?.is_admin
                 return (
@@ -227,15 +227,15 @@ export default function AdminPage() {
                       <div
                         className="px-3.5 py-2.5 text-sm leading-relaxed"
                         style={{
-                          background: fromAdmin ? '#c9a99a' : '#f5f0ec',
-                          color: fromAdmin ? '#fff' : '#302820',
+                          background: fromAdmin ? '#D4688A' : '#FAE8EF',
+                          color: fromAdmin ? '#fff' : '#2C1A22',
                           borderRadius: fromAdmin ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
                           maxWidth: 260,
                         }}
                       >
                         {msg.content}
                       </div>
-                      <span className="text-xs px-1" style={{ color: '#b09d8a' }}>
+                      <span className="text-xs px-1" style={{ color: '#6B4A57' }}>
                         {new Date(msg.created_at).toLocaleTimeString('en-AU', { hour: 'numeric', minute: '2-digit' })}
                       </span>
                     </div>
@@ -249,7 +249,7 @@ export default function AdminPage() {
             <form
               onSubmit={sendDmReply}
               className="flex-shrink-0 flex gap-2 px-4 py-3"
-              style={{ background: '#fff', borderTop: '1px solid #ece4dc' }}
+              style={{ background: '#FEF9FB', borderTop: '1px solid #FAE8EF' }}
             >
               <input
                 className="input-field flex-1"
@@ -264,8 +264,8 @@ export default function AdminPage() {
                 disabled={!dmInput.trim() || dmSending}
                 className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-all"
                 style={{
-                  background: dmInput.trim() ? '#c9a99a' : '#ece4dc',
-                  color: dmInput.trim() ? '#fff' : '#b09d8a',
+                  background: dmInput.trim() ? '#D4688A' : '#FAE8EF',
+                  color: dmInput.trim() ? '#fff' : '#6B4A57',
                 }}
               >
                 <svg width={16} height={16} viewBox="0 0 24 24" fill="none"
@@ -287,22 +287,22 @@ export default function AdminPage() {
                   key={convo.member_id}
                   onClick={() => setActiveDm(convo.profiles)}
                   className="w-full flex items-center gap-3 px-4 py-4 transition-all active:bg-gray-50"
-                  style={{ borderBottom: '1px solid #f5f0ec', background: '#fff' }}
+                  style={{ borderBottom: '1px solid #FAE8EF', background: '#FEF9FB' }}
                 >
                   <Avatar avatarUrl={convo.profiles?.avatar_url} name={convo.profiles?.full_name} size={48} />
                   <div className="flex-1 min-w-0 text-left">
                     <div className="flex items-center justify-between gap-2">
-                      <p className="font-semibold text-sm" style={{ color: '#302820' }}>
+                      <p className="font-semibold text-sm" style={{ color: '#2C1A22' }}>
                         {convo.profiles?.full_name}
                       </p>
-                      <span className="text-xs flex-shrink-0" style={{ color: '#b09d8a' }}>
+                      <span className="text-xs flex-shrink-0" style={{ color: '#6B4A57' }}>
                         {new Date(convo.created_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })}
                       </span>
                     </div>
-                    <p className="text-xs mt-0.5" style={{ color: '#8e7a68' }}>
+                    <p className="text-xs mt-0.5" style={{ color: '#6B4A57' }}>
                       {convo.profiles?.instagram_handle}
                     </p>
-                    <p className="text-xs truncate mt-1" style={{ color: '#b09d8a' }}>
+                    <p className="text-xs truncate mt-1" style={{ color: '#6B4A57' }}>
                       {convo.content}
                     </p>
                   </div>
@@ -315,7 +315,7 @@ export default function AdminPage() {
 
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-3">
         {loading && tab !== 'DMs' ? (
-          <div className="text-center py-12" style={{ color: '#b09d8a' }}>Loading…</div>
+          <div className="text-center py-12" style={{ color: '#6B4A57' }}>Loading…</div>
         ) : tab === 'Pending' ? (
           pending.length === 0 ? (
             <EmptyState icon="✅" text="No pending applications" />
@@ -380,7 +380,7 @@ function MemberCard({ profile, actions, actioning }) {
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <p className="font-medium text-sm" style={{ color: '#302820' }}>{profile.full_name}</p>
+            <p className="text-sm" style={{ fontFamily: 'DM Sans, sans-serif', fontWeight: 600, color: '#2C1A22' }}>{profile.full_name}</p>
             {profile.is_admin && (
               <span className="badge-approved text-xs">Admin</span>
             )}
@@ -390,11 +390,11 @@ function MemberCard({ profile, actions, actioning }) {
             target="_blank"
             rel="noopener noreferrer"
             className="text-sm mt-0.5 inline-block"
-            style={{ color: '#c9a99a' }}
+            style={{ color: '#D4688A' }}
           >
             {profile.instagram_handle} ↗
           </a>
-          <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs" style={{ color: '#8e7a68' }}>
+          <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs" style={{ color: '#6B4A57' }}>
             <span>📧 {profile.email}</span>
             <span>👥 {profile.instagram_followers?.toLocaleString()} followers</span>
             <span>📍 {profile.location_city}, {profile.location_state}</span>
@@ -404,7 +404,7 @@ function MemberCard({ profile, actions, actioning }) {
       </div>
       <div className="flex gap-2 mt-4">
         {actioning ? (
-          <span className="text-sm" style={{ color: '#b09d8a' }}>Updating…</span>
+          <span className="text-sm" style={{ color: '#6B4A57' }}>Updating…</span>
         ) : actions}
       </div>
     </div>
@@ -415,7 +415,7 @@ function EmptyState({ icon, text }) {
   return (
     <div className="text-center py-16">
       <span style={{ fontSize: 32 }}>{icon}</span>
-      <p className="mt-3 text-sm" style={{ color: '#b09d8a' }}>{text}</p>
+      <p className="mt-3 text-sm" style={{ color: '#6B4A57' }}>{text}</p>
     </div>
   )
 }
