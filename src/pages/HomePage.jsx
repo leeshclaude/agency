@@ -31,12 +31,11 @@ async function uploadHomeFile(file, folder) {
 
 export default function HomePage() {
   const { profile, isAdmin } = useAuth()
-  const [announcement, setAnnouncement] = useState(null) // full object
+  const [announcement, setAnnouncement] = useState(null)
   const [resources, setResources] = useState([])
   const [activeCategory, setActiveCategory] = useState('All')
   const [loading, setLoading] = useState(true)
 
-  // Announcement editing state
   const [editingAnnouncement, setEditingAnnouncement] = useState(false)
   const [annDraftText, setAnnDraftText] = useState('')
   const [annImgFile, setAnnImgFile] = useState(null)
@@ -47,13 +46,10 @@ export default function HomePage() {
   const annImgRef = useRef(null)
   const annFileRef = useRef(null)
 
-  // Resource modal state
   const [showAddResource, setShowAddResource] = useState(false)
   const [editingResource, setEditingResource] = useState(null)
 
-  useEffect(() => {
-    fetchData()
-  }, [])
+  useEffect(() => { fetchData() }, [])
 
   async function fetchData() {
     setLoading(true)
@@ -131,28 +127,31 @@ export default function HomePage() {
 
   return (
     <div className="page-container">
-      {/* Greeting */}
-      <div className="mb-6 flex items-center gap-4">
+
+      {/* ── Greeting ──────────────────────────────────── */}
+      <div className="mb-7 flex items-center gap-4">
         <AvatarUpload size={64} />
         <div>
           <p className="section-label mb-1">Welcome back</p>
-          <h1 className="text-2xl font-semibold" style={{ color: '#302820' }}>
-            Hey, {firstName} 👋
+          <h1
+            className="text-2xl"
+            style={{ fontFamily: 'Josefin Sans, sans-serif', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#2C1A22' }}
+          >
+            Hey, {firstName}
           </h1>
-          <p className="text-sm mt-0.5" style={{ color: '#8e7a68' }}>
+          <p className="text-sm mt-0.5" style={{ fontFamily: 'DM Sans, sans-serif', color: '#6B4A57' }}>
             {profile?.instagram_handle}
           </p>
         </div>
       </div>
 
-      {/* Announcement banner */}
+      {/* ── Announcement banner ───────────────────────── */}
       {(hasAnnouncement || isAdmin) && (
-        <div className="mb-6">
+        <div className="mb-7">
           {editingAnnouncement ? (
-            <div className="card p-4 space-y-3">
+            <div className="card p-5 space-y-4">
               <p className="section-label">Announcement</p>
 
-              {/* Text */}
               <textarea
                 className="input-field"
                 value={annDraftText}
@@ -165,29 +164,22 @@ export default function HomePage() {
 
               {/* Image upload */}
               <div>
-                <p className="text-sm font-medium mb-1.5" style={{ color: '#4e4238' }}>Image (optional)</p>
+                <p className="section-label mb-2">Image (optional)</p>
                 {annImgPreview && (
                   <div className="mb-2 relative">
-                    <img
-                      src={annImgPreview}
-                      alt=""
-                      className="w-full rounded-xl object-cover"
-                      style={{ maxHeight: 180 }}
-                    />
+                    <img src={annImgPreview} alt="" className="w-full rounded-xl object-cover" style={{ maxHeight: 180 }} />
                     <button
                       onClick={() => { setAnnImgFile(null); setAnnImgPreview(null) }}
                       className="absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold"
-                      style={{ background: 'rgba(48,40,32,0.6)', color: '#fff' }}
-                    >
-                      ✕
-                    </button>
+                      style={{ background: 'rgba(44,26,34,0.55)', color: '#fff' }}
+                    >✕</button>
                   </div>
                 )}
                 <input ref={annImgRef} type="file" accept="image/*" onChange={handleAnnImgChange} className="hidden" />
                 <button
                   onClick={() => annImgRef.current.click()}
-                  className="text-sm font-medium px-3 py-1.5 rounded-lg"
-                  style={{ background: '#f5f0ec', color: '#6e5e4f' }}
+                  className="text-xs font-medium px-3 py-1.5 rounded-full"
+                  style={{ background: '#FAE8EF', color: '#8C3A55', fontFamily: 'DM Sans, sans-serif' }}
                 >
                   {annImgPreview ? 'Change image' : '+ Add image'}
                 </button>
@@ -195,24 +187,18 @@ export default function HomePage() {
 
               {/* File attachment */}
               <div>
-                <p className="text-sm font-medium mb-1.5" style={{ color: '#4e4238' }}>File attachment (optional)</p>
+                <p className="section-label mb-2">File attachment (optional)</p>
                 {annAttachName && (
-                  <div className="flex items-center gap-2 mb-2 px-3 py-2 rounded-lg" style={{ background: '#f5f0ec' }}>
-                    <span className="text-sm flex-1 truncate" style={{ color: '#4e4238' }}>📎 {annAttachName}</span>
-                    <button
-                      onClick={() => { setAnnAttachFile(null); setAnnAttachName('') }}
-                      className="text-xs"
-                      style={{ color: '#b09d8a' }}
-                    >
-                      ✕
-                    </button>
+                  <div className="flex items-center gap-2 mb-2 px-3 py-2 rounded-xl" style={{ background: '#FAE8EF' }}>
+                    <span className="text-sm flex-1 truncate" style={{ fontFamily: 'DM Sans, sans-serif', color: '#2C1A22' }}>📎 {annAttachName}</span>
+                    <button onClick={() => { setAnnAttachFile(null); setAnnAttachName('') }} className="text-xs" style={{ color: '#6B4A57' }}>✕</button>
                   </div>
                 )}
                 <input ref={annFileRef} type="file" onChange={handleAnnFileChange} className="hidden" />
                 <button
                   onClick={() => annFileRef.current.click()}
-                  className="text-sm font-medium px-3 py-1.5 rounded-lg"
-                  style={{ background: '#f5f0ec', color: '#6e5e4f' }}
+                  className="text-xs font-medium px-3 py-1.5 rounded-full"
+                  style={{ background: '#FAE8EF', color: '#8C3A55', fontFamily: 'DM Sans, sans-serif' }}
                 >
                   {annAttachName ? 'Change file' : '+ Attach file'}
                 </button>
@@ -222,33 +208,31 @@ export default function HomePage() {
                 <button
                   onClick={saveAnnouncement}
                   disabled={annSaving}
-                  className="btn-primary text-sm py-2"
-                  style={{ width: 'auto', paddingLeft: 16, paddingRight: 16 }}
+                  className="btn-primary"
+                  style={{ width: 'auto', paddingLeft: 20, paddingRight: 20 }}
                 >
                   {annSaving ? 'Saving…' : 'Save'}
                 </button>
-                <button onClick={() => setEditingAnnouncement(false)} className="btn-ghost text-sm">
+                <button onClick={() => setEditingAnnouncement(false)} className="btn-ghost">
                   Cancel
                 </button>
               </div>
             </div>
+
           ) : hasAnnouncement ? (
-            <div className="rounded-2xl overflow-hidden" style={{ background: '#edd5cc' }}>
+            <div className="rounded-2xl overflow-hidden" style={{ background: '#FAE8EF' }}>
               {announcement?.image_url && (
-                <img
-                  src={announcement.image_url}
-                  alt=""
-                  className="w-full object-cover"
-                  style={{ maxHeight: 220 }}
-                />
+                <img src={announcement.image_url} alt="" className="w-full object-cover" style={{ maxHeight: 220 }} />
               )}
               {(announcement?.text || announcement?.file_url) && (
-                <div className="px-4 py-3.5">
+                <div className="px-4 py-4">
                   <div className="flex items-start gap-3">
                     {!announcement?.image_url && <span className="text-lg flex-shrink-0">📢</span>}
                     <div className="flex-1 min-w-0">
                       {announcement?.text && (
-                        <p className="text-sm font-medium" style={{ color: '#4e4238' }}>{announcement.text}</p>
+                        <p className="text-sm" style={{ fontFamily: 'DM Sans, sans-serif', fontWeight: 500, color: '#2C1A22' }}>
+                          {announcement.text}
+                        </p>
                       )}
                       {announcement?.file_url && (
                         <a
@@ -256,8 +240,8 @@ export default function HomePage() {
                           target="_blank"
                           rel="noopener noreferrer"
                           download={announcement.file_name}
-                          className="inline-flex items-center gap-1.5 mt-2 text-xs font-medium px-3 py-1.5 rounded-lg"
-                          style={{ background: 'rgba(255,255,255,0.5)', color: '#4e4238' }}
+                          className="inline-flex items-center gap-1.5 mt-2 text-xs font-medium px-3 py-1.5 rounded-full"
+                          style={{ background: 'rgba(255,255,255,0.6)', color: '#8C3A55', fontFamily: 'DM Sans, sans-serif' }}
                         >
                           📎 {announcement.file_name || 'Download attachment'}
                         </a>
@@ -266,8 +250,8 @@ export default function HomePage() {
                     {isAdmin && (
                       <button
                         onClick={startEditAnnouncement}
-                        className="text-xs flex-shrink-0 font-medium"
-                        style={{ color: '#8e7a68' }}
+                        className="text-xs flex-shrink-0"
+                        style={{ fontFamily: 'Josefin Sans, sans-serif', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#8C3A55' }}
                       >
                         Edit
                       </button>
@@ -275,56 +259,66 @@ export default function HomePage() {
                   </div>
                 </div>
               )}
-              {/* Image-only: still show edit button */}
               {announcement?.image_url && !announcement?.text && !announcement?.file_url && isAdmin && (
                 <div className="px-4 py-2 flex justify-end">
                   <button
                     onClick={startEditAnnouncement}
-                    className="text-xs font-medium"
-                    style={{ color: '#8e7a68' }}
+                    className="text-xs"
+                    style={{ fontFamily: 'Josefin Sans, sans-serif', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#8C3A55' }}
                   >
                     Edit
                   </button>
                 </div>
               )}
             </div>
+
           ) : isAdmin ? (
             <button
               onClick={startEditAnnouncement}
-              className="w-full rounded-2xl px-4 py-3.5 text-sm text-left"
-              style={{ background: '#f5f0ec', color: '#b09d8a', border: '1px dashed #ddd2c7' }}
+              className="w-full rounded-2xl px-4 py-4 text-left"
+              style={{ background: '#FAE8EF', border: '1px dashed #F2A7BE' }}
             >
-              + Add an announcement
+              <span style={{ fontFamily: 'Josefin Sans, sans-serif', fontWeight: 700, fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#D4688A' }}>
+                + Add an announcement
+              </span>
             </button>
           ) : null}
         </div>
       )}
 
-      {/* Resources */}
+      {/* ── Resources header ──────────────────────────── */}
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold" style={{ color: '#302820' }}>Resources</h2>
+        <h2
+          style={{ fontFamily: 'Josefin Sans, sans-serif', fontWeight: 700, fontSize: 16, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#2C1A22' }}
+        >
+          Resources
+        </h2>
         {isAdmin && (
           <button
             onClick={() => { setEditingResource(null); setShowAddResource(true) }}
-            className="text-sm font-medium"
-            style={{ color: '#c9a99a' }}
+            style={{ fontFamily: 'Josefin Sans, sans-serif', fontWeight: 700, fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#D4688A' }}
           >
             + Add
           </button>
         )}
       </div>
 
-      {/* Category filter */}
-      <div className="flex gap-2 overflow-x-auto pb-2 mb-4 -mx-4 px-4" style={{ scrollbarWidth: 'none' }}>
+      {/* ── Category filter ───────────────────────────── */}
+      <div className="flex gap-2 overflow-x-auto pb-2 mb-5 -mx-4 px-4" style={{ scrollbarWidth: 'none' }}>
         {CATEGORIES.map((cat) => (
           <button
             key={cat}
             onClick={() => setActiveCategory(cat)}
-            className="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-all"
+            className="flex-shrink-0 px-3 py-1.5 rounded-full transition-all"
             style={{
-              background: activeCategory === cat ? '#c9a99a' : '#fff',
-              color: activeCategory === cat ? '#fff' : '#6e5e4f',
-              border: `1px solid ${activeCategory === cat ? '#c9a99a' : '#ddd2c7'}`,
+              background: activeCategory === cat ? '#D4688A' : '#FAE8EF',
+              color: activeCategory === cat ? '#fff' : '#8C3A55',
+              border: `1px solid ${activeCategory === cat ? '#D4688A' : '#F2A7BE'}`,
+              fontFamily: 'DM Sans, sans-serif',
+              fontWeight: 500,
+              fontSize: 11,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
             }}
           >
             {cat}
@@ -333,11 +327,11 @@ export default function HomePage() {
       </div>
 
       {loading ? (
-        <div className="text-center py-12" style={{ color: '#b09d8a' }}>Loading…</div>
+        <div className="text-center py-12" style={{ fontFamily: 'DM Sans, sans-serif', color: '#6B4A57' }}>Loading…</div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-16">
           <span style={{ fontSize: 32 }}>📭</span>
-          <p className="mt-3 text-sm" style={{ color: '#b09d8a' }}>No resources yet in this category</p>
+          <p className="mt-3 text-sm" style={{ fontFamily: 'DM Sans, sans-serif', color: '#6B4A57' }}>No resources yet in this category</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -353,7 +347,6 @@ export default function HomePage() {
         </div>
       )}
 
-      {/* Add/Edit Resource Modal */}
       {showAddResource && (
         <ResourceModal
           resource={editingResource}
@@ -372,42 +365,47 @@ function ResourceCard({ resource, isAdmin, onEdit, onDelete }) {
   return (
     <div className="card overflow-hidden">
       {resource.image_url && (
-        <img
-          src={resource.image_url}
-          alt=""
-          className="w-full object-cover"
-          style={{ maxHeight: 180 }}
-        />
+        <img src={resource.image_url} alt="" className="w-full object-cover" style={{ maxHeight: 180 }} />
       )}
-      <div className="p-4">
+      <div className="p-5">
         <div className="flex items-start justify-between gap-2">
           <div className="flex items-start gap-3 flex-1 min-w-0">
             {!resource.image_url && (
-              <span className="text-xl flex-shrink-0 mt-0.5">
-                {CATEGORY_ICONS[resource.category] || '📄'}
-              </span>
+              <span className="text-xl flex-shrink-0 mt-0.5">{CATEGORY_ICONS[resource.category] || '📄'}</span>
             )}
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap mb-1">
+              <div className="mb-2">
                 <span
-                  className="text-xs font-medium px-2 py-0.5 rounded-full"
-                  style={{ background: '#f5f0ec', color: '#8e7a68' }}
+                  className="inline-block px-2.5 py-0.5 rounded-full"
+                  style={{
+                    background: '#FAE8EF',
+                    color: '#8C3A55',
+                    fontFamily: 'DM Sans, sans-serif',
+                    fontWeight: 500,
+                    fontSize: 10,
+                    letterSpacing: '0.12em',
+                    textTransform: 'uppercase',
+                  }}
                 >
                   {resource.category}
                 </span>
               </div>
-              <h3 className="font-semibold text-sm mb-1" style={{ color: '#302820' }}>
+              <h3
+                className="mb-1"
+                style={{ fontFamily: 'Josefin Sans, sans-serif', fontWeight: 700, fontSize: 13, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#2C1A22' }}
+              >
                 {resource.title}
               </h3>
-              <p className="text-sm" style={{ color: '#6e5e4f' }}>{resource.description}</p>
+              <p className="text-sm leading-relaxed" style={{ fontFamily: 'DM Sans, sans-serif', color: '#6B4A57' }}>
+                {resource.description}
+              </p>
               <div className="flex flex-wrap gap-3 mt-2">
                 {resource.link && (
                   <a
                     href={resource.link}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-xs font-medium"
-                    style={{ color: '#c9a99a' }}
+                    style={{ fontFamily: 'Josefin Sans, sans-serif', fontWeight: 700, fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#D4688A' }}
                   >
                     Open link →
                   </a>
@@ -418,8 +416,7 @@ function ResourceCard({ resource, isAdmin, onEdit, onDelete }) {
                     target="_blank"
                     rel="noopener noreferrer"
                     download={resource.file_name}
-                    className="text-xs font-medium"
-                    style={{ color: '#c9a99a' }}
+                    style={{ fontFamily: 'Josefin Sans, sans-serif', fontWeight: 700, fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#D4688A' }}
                   >
                     📎 {resource.file_name || 'Download'}
                   </a>
@@ -521,26 +518,26 @@ function ResourceModal({ resource, profileId, onClose, onSaved }) {
   return (
     <div
       className="fixed inset-0 z-50 flex items-end"
-      style={{ background: 'rgba(48,40,32,0.4)' }}
+      style={{ background: 'rgba(44,26,34,0.45)' }}
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div
         className="w-full max-w-lg mx-auto rounded-t-3xl px-5 pt-5 pb-8 space-y-4"
-        style={{ background: '#faf8f6', maxHeight: '90vh', overflowY: 'auto' }}
+        style={{ background: '#FEF9FB', maxHeight: '90vh', overflowY: 'auto' }}
       >
         <div className="flex items-center justify-between mb-1">
-          <h2 className="font-semibold" style={{ color: '#302820' }}>
+          <h2 style={{ fontFamily: 'Josefin Sans, sans-serif', fontWeight: 700, fontSize: 14, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#2C1A22' }}>
             {resource ? 'Edit resource' : 'Add resource'}
           </h2>
-          <button onClick={onClose} className="btn-ghost px-2 py-1 text-sm">✕</button>
+          <button onClick={onClose} className="btn-ghost px-2 py-1">✕</button>
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1" style={{ color: '#4e4238' }}>Title</label>
+          <label className="section-label block mb-2">Title</label>
           <input className="input-field" value={form.title} onChange={set('title')} placeholder="Resource title" />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1" style={{ color: '#4e4238' }}>Description</label>
+          <label className="section-label block mb-2">Description</label>
           <textarea
             className="input-field"
             value={form.description}
@@ -551,35 +548,28 @@ function ResourceModal({ resource, profileId, onClose, onSaved }) {
           />
         </div>
         <div>
-          <label className="block text-sm font-medium mb-1" style={{ color: '#4e4238' }}>Link (optional)</label>
+          <label className="section-label block mb-2">Link (optional)</label>
           <input className="input-field" value={form.link} onChange={set('link')} placeholder="https://…" type="url" />
         </div>
 
         {/* Image upload */}
         <div>
-          <label className="block text-sm font-medium mb-1.5" style={{ color: '#4e4238' }}>Image (optional)</label>
+          <label className="section-label block mb-2">Image (optional)</label>
           {imgPreview && (
             <div className="mb-2 relative">
-              <img
-                src={imgPreview}
-                alt=""
-                className="w-full rounded-xl object-cover"
-                style={{ maxHeight: 160 }}
-              />
+              <img src={imgPreview} alt="" className="w-full rounded-xl object-cover" style={{ maxHeight: 160 }} />
               <button
                 onClick={() => { setImgFile(null); setImgPreview(null) }}
                 className="absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold"
-                style={{ background: 'rgba(48,40,32,0.6)', color: '#fff' }}
-              >
-                ✕
-              </button>
+                style={{ background: 'rgba(44,26,34,0.55)', color: '#fff' }}
+              >✕</button>
             </div>
           )}
           <input ref={imgRef} type="file" accept="image/*" onChange={handleImgChange} className="hidden" />
           <button
             onClick={() => imgRef.current.click()}
-            className="text-sm font-medium px-3 py-1.5 rounded-lg"
-            style={{ background: '#f5f0ec', color: '#6e5e4f' }}
+            className="text-xs font-medium px-3 py-1.5 rounded-full"
+            style={{ background: '#FAE8EF', color: '#8C3A55', fontFamily: 'DM Sans, sans-serif' }}
           >
             {imgPreview ? 'Change image' : '+ Add image'}
           </button>
@@ -587,31 +577,25 @@ function ResourceModal({ resource, profileId, onClose, onSaved }) {
 
         {/* File attachment */}
         <div>
-          <label className="block text-sm font-medium mb-1.5" style={{ color: '#4e4238' }}>File attachment (optional)</label>
+          <label className="section-label block mb-2">File attachment (optional)</label>
           {attachName && (
-            <div className="flex items-center gap-2 mb-2 px-3 py-2 rounded-lg" style={{ background: '#f5f0ec' }}>
-              <span className="text-sm flex-1 truncate" style={{ color: '#4e4238' }}>📎 {attachName}</span>
-              <button
-                onClick={() => { setAttachFile(null); setAttachName('') }}
-                className="text-xs"
-                style={{ color: '#b09d8a' }}
-              >
-                ✕
-              </button>
+            <div className="flex items-center gap-2 mb-2 px-3 py-2 rounded-xl" style={{ background: '#FAE8EF' }}>
+              <span className="text-sm flex-1 truncate" style={{ fontFamily: 'DM Sans, sans-serif', color: '#2C1A22' }}>📎 {attachName}</span>
+              <button onClick={() => { setAttachFile(null); setAttachName('') }} className="text-xs" style={{ color: '#6B4A57' }}>✕</button>
             </div>
           )}
           <input ref={fileRef} type="file" onChange={handleFileChange} className="hidden" />
           <button
             onClick={() => fileRef.current.click()}
-            className="text-sm font-medium px-3 py-1.5 rounded-lg"
-            style={{ background: '#f5f0ec', color: '#6e5e4f' }}
+            className="text-xs font-medium px-3 py-1.5 rounded-full"
+            style={{ background: '#FAE8EF', color: '#8C3A55', fontFamily: 'DM Sans, sans-serif' }}
           >
             {attachName ? 'Change file' : '+ Attach file'}
           </button>
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-1" style={{ color: '#4e4238' }}>Category</label>
+          <label className="section-label block mb-2">Category</label>
           <select className="input-field" value={form.category} onChange={set('category')}>
             {['Brand Outreach', 'Getting Paid', 'Rate Guidance', 'Content Strategy', 'Legal and Contracts'].map((c) => (
               <option key={c} value={c}>{c}</option>
@@ -619,7 +603,9 @@ function ResourceModal({ resource, profileId, onClose, onSaved }) {
           </select>
         </div>
 
-        {error && <p className="text-sm" style={{ color: '#dc2626' }}>{error}</p>}
+        {error && (
+          <p className="text-sm" style={{ fontFamily: 'DM Sans, sans-serif', color: '#8C3A55' }}>{error}</p>
+        )}
 
         <button onClick={handleSave} disabled={loading} className="btn-primary">
           {loading ? 'Saving…' : resource ? 'Save changes' : 'Add resource'}
