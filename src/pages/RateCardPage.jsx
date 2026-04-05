@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import { generateRateCardPDF } from '../lib/generatePDF'
 
-const NICHES = ['Lifestyle', 'Motherhood', 'Home', 'Wellness', 'Fashion', 'Food', 'Travel', 'Mixed']
+const NICHES = ['Lifestyle', 'Motherhood', 'Home', 'Wellness', 'Fashion', 'Food', 'Travel', 'Mixed', 'Other']
 
 const CONTENT_TYPES = [
   { key: 'reels', label: 'Reels' },
@@ -19,23 +19,23 @@ const CONTENT_TYPES = [
 const STEPS = ['Your Details', 'Content', 'Preferences', 'Pricing', 'Preview']
 
 function getSuggestedRate(followers) {
-  if (followers < 5000) return { min: 50, max: 150, label: 'Under 5k followers' }
-  if (followers < 10000) return { min: 150, max: 300, label: '5k–10k followers' }
-  if (followers < 20000) return { min: 300, max: 600, label: '10k–20k followers' }
-  if (followers < 50000) return { min: 600, max: 1200, label: '20k–50k followers' }
-  return { min: 1200, max: null, label: '50k+ followers' }
+  if (followers < 5000)  return { min: 150,  max: 300,  label: 'Under 5k followers' }
+  if (followers < 10000) return { min: 300,  max: 600,  label: '5k–10k followers' }
+  if (followers < 20000) return { min: 600,  max: 1200, label: '10k–20k followers' }
+  if (followers < 50000) return { min: 1200, max: 2500, label: '20k–50k followers' }
+  return { min: 2500, max: null, label: '50k+ followers' }
 }
 
 // Per-content-type rate multipliers applied on top of the base follower rate
 const CONTENT_TYPE_MULTIPLIERS = {
   reels:            1.0,
-  static_post:      0.6,
-  carousel:         0.75,
-  stories:          0.5,
-  highlights:       0.4,
-  ugc_video:        1.25,
-  ugc_photo:        0.75,
-  commercial_usage: 1.5,
+  static_post:      0.7,
+  carousel:         0.85,
+  stories:          0.6,
+  highlights:       0.5,
+  ugc_video:        1.4,
+  ugc_photo:        0.9,
+  commercial_usage: 2.0,
 }
 
 function getSuggestedRateForType(followers, typeKey) {
@@ -51,6 +51,7 @@ const INITIAL_FORM = {
   name: '',
   instagram_handle: '',
   niche: [],
+  niche_other: '',
   follower_count: '',
   engagement_rate: '',
   interactions_period: '30',
@@ -111,6 +112,7 @@ export default function RateCardPage() {
         instagram_handle: data.instagram_handle,
         // Handle legacy text niche and new array niche
         niche: Array.isArray(data.niche) ? data.niche : (data.niche ? [data.niche] : []),
+        niche_other: data.niche_other || '',
         follower_count: data.follower_count,
         engagement_rate: data.engagement_rate,
         interactions_period: data.interactions_period || '30',
@@ -219,6 +221,7 @@ export default function RateCardPage() {
       name: form.name.trim(),
       instagram_handle: handle.trim(),
       niche: form.niche,
+      niche_other: form.niche_other || null,
       follower_count: parseInt(form.follower_count),
       engagement_rate: parseFloat(form.engagement_rate),
       interactions_period: form.interactions_period,
@@ -411,6 +414,14 @@ function Step1({ form, setField, toggleNiche }) {
             )
           })}
         </div>
+        {form.niche.includes('Other') && (
+          <input
+            className="input-field mt-3"
+            placeholder="Describe your niche(s) e.g. Fitness, Beauty, Pets…"
+            value={form.niche_other}
+            onChange={(e) => setField('niche_other', e.target.value)}
+          />
+        )}
       </div>
 
       <div>
@@ -471,7 +482,7 @@ function Step1({ form, setField, toggleNiche }) {
               />
             </div>
             <div className="flex-1">
-              <label className="block text-xs font-medium mb-1.5" style={{ color: '#4e4238' }}>Video views</label>
+              <label className="block text-xs font-medium mb-1.5" style={{ color: '#4e4238' }}>Views</label>
               <input
                 className="input-field"
                 type="number"
@@ -902,7 +913,11 @@ function Step5({ form }) {
   const giftedLabels = { yes: 'Yes', no: 'No', depends: 'Depends on brand' }
   const whitelistLabels = { yes: 'Yes', no: 'No', what_is_this: 'Not sure yet' }
 
-  const nicheDisplay = Array.isArray(form.niche) ? form.niche.join(', ') : form.niche
+  const nicheDisplay = (() => {
+    const niches = Array.isArray(form.niche) ? [...form.niche] : (form.niche ? [form.niche] : [])
+    const withOther = niches.map((n) => n === 'Other' && form.niche_other ? form.niche_other : n)
+    return withOther.join(', ')
+  })()
 
   // Countries
   const countries = [
@@ -976,7 +991,7 @@ function Step5({ form }) {
             )}
             {form.avg_video_views && (
               <div>
-                <span className="section-label" style={{ fontSize: 10 }}>Video Views ({form.interactions_period}d)</span>
+                <span className="section-label" style={{ fontSize: 10 }}>Views ({form.interactions_period}d)</span>
                 <p className="font-medium" style={{ color: '#302820' }}>{parseInt(form.avg_video_views).toLocaleString()}</p>
               </div>
             )}

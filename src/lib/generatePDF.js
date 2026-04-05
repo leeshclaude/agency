@@ -12,22 +12,22 @@ const CONTENT_TYPE_LABELS = {
 }
 
 function getSuggestedRate(followers) {
-  if (followers < 5000) return { min: 50, max: 150 }
-  if (followers < 10000) return { min: 150, max: 300 }
-  if (followers < 20000) return { min: 300, max: 600 }
-  if (followers < 50000) return { min: 600, max: 1200 }
-  return { min: 1200, max: null }
+  if (followers < 5000)  return { min: 150,  max: 300  }
+  if (followers < 10000) return { min: 300,  max: 600  }
+  if (followers < 20000) return { min: 600,  max: 1200 }
+  if (followers < 50000) return { min: 1200, max: 2500 }
+  return { min: 2500, max: null }
 }
 
 const CONTENT_TYPE_MULTIPLIERS = {
   reels:            1.0,
-  static_post:      0.6,
-  carousel:         0.75,
-  stories:          0.5,
-  highlights:       0.4,
-  ugc_video:        1.25,
-  ugc_photo:        0.75,
-  commercial_usage: 1.5,
+  static_post:      0.7,
+  carousel:         0.85,
+  stories:          0.6,
+  highlights:       0.5,
+  ugc_video:        1.4,
+  ugc_photo:        0.9,
+  commercial_usage: 2.0,
 }
 
 function getSuggestedRateForType(followers, typeKey) {
@@ -94,11 +94,29 @@ export function generateRateCardPDF(form) {
   doc.text('AUDIENCE OVERVIEW', MARGIN, y)
   y += 5
 
-  // Niche — may be array or string
-  const nicheValue = Array.isArray(form.niche) ? form.niche.join(', ') : (form.niche || '—')
+  // Niche — may be array or string; substitute "Other" with custom text
+  const nicheArr = Array.isArray(form.niche) ? [...form.niche] : (form.niche ? [form.niche] : [])
+  const nicheValue = nicheArr
+    .map((n) => n === 'Other' && form.niche_other ? form.niche_other : n)
+    .join(', ') || '—'
+
+  // If niche is long, render it full-width on its own row first
+  const nicheLong = nicheValue.length > 28
+  if (nicheLong) {
+    doc.setFontSize(8)
+    doc.setTextColor(...LIGHT)
+    doc.setFont('helvetica', 'normal')
+    doc.text('Niche', MARGIN, y + 6)
+    doc.setFontSize(11)
+    doc.setTextColor(...DARK)
+    doc.setFont('helvetica', 'bold')
+    const nicheLines = doc.splitTextToSize(nicheValue, CONTENT_W)
+    doc.text(nicheLines, MARGIN, y + 13)
+    y += 8 + nicheLines.length * 7
+  }
 
   const mainCols = [
-    { label: 'Niche', value: nicheValue },
+    ...(!nicheLong ? [{ label: 'Niche', value: nicheValue }] : []),
     { label: 'Followers', value: parseInt(form.follower_count || 0).toLocaleString() },
     { label: 'Engagement Rate', value: `${form.engagement_rate}%` },
   ]
@@ -110,14 +128,10 @@ export function generateRateCardPDF(form) {
     doc.setTextColor(...LIGHT)
     doc.setFont('helvetica', 'normal')
     doc.text(label, x, y + 6)
-    doc.setFontSize(i === 0 && nicheValue.length > 18 ? 9 : 13)
+    doc.setFontSize(13)
     doc.setTextColor(...DARK)
     doc.setFont('helvetica', 'bold')
-    // Truncate niche if too long for column
-    const displayValue = i === 0 && nicheValue.length > 22
-      ? nicheValue.substring(0, 20) + '…'
-      : value
-    doc.text(displayValue, x, y + 13)
+    doc.text(value, x, y + 13)
   })
   y += 20
 
@@ -128,7 +142,7 @@ export function generateRateCardPDF(form) {
       value: parseInt(form.avg_interactions).toLocaleString(),
     },
     form.avg_video_views && {
-      label: `Video Views (${form.interactions_period || 30}d)`,
+      label: `Views (${form.interactions_period || 30}d)`,
       value: parseInt(form.avg_video_views).toLocaleString(),
     },
     form.avg_profile_visits && {

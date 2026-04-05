@@ -33,6 +33,13 @@
 - [x] DM admin — members can privately message admin via 💌 Admin toggle in Chat; admin sees IG-style inbox + can reply (in both Chat and Admin panel)
 - [x] Emoji reactions — click any message to open emoji picker (❤️ 😂 😮 😢 👏 🔥); reaction pills with counts shown below bubble; click outside to dismiss
 - [x] Instagram profile links — clickable IG handle links in admin approval panel (to verify AU location + followers) and in chat messages (so members can follow each other)
+- [ ] Rate card: rename "Video views" → "Views" everywhere in UI and PDF
+- [ ] Rate card: increase suggested rates — current formula undercuts creators; rates should reflect fair market value (can always come down, can't go up)
+- [ ] Rate card: fix PDF niche text overflow — wrap across multiple lines if needed
+- [ ] Rate card: add "Other" niche option with free-text write-in field (support multiple custom niches)
+- [ ] Rate card: PDF visual redesign — more polished and brand-ready for sending to brands
+- [ ] Home feed: announcements support image and file attachments
+- [ ] Home feed: resource cards support image and file attachments
 - [ ] Replace placeholder app icons with real branding (192×192 and 512×512 PNG) — files exist in public/icons/, need real artwork
 - [ ] Rename "The Mama Edit" to final community name throughout the app
 - [ ] Set a custom domain name in Vercel
