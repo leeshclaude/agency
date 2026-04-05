@@ -28,7 +28,7 @@
 
 - [x] Login/signup validation — replaced red error banner with inline required field indicators (red asterisk on labels, red border on field, error text below each field)
 - [x] Admin back button — added back button in admin console header to return to Settings
-- [ ] Chat unread badges — code built but not confirmed working; needs re-testing
+- [x] Chat unread badges — confirmed working; badges on channel list rows, Group/Admin toggle buttons, and bottom nav Chat icon
 - [x] Chat tab redesign — IG-style vertical channel list (emoji avatar, last message preview, unread badge); tapping opens chat with back arrow
 - [x] DM admin — members can privately message admin via 💌 Admin toggle in Chat; admin sees IG-style inbox + can reply (in both Chat and Admin panel)
 - [x] Emoji reactions — click any message to open emoji picker (❤️ 😂 😮 😢 👏 🔥); reaction pills with counts shown below bubble; click outside to dismiss
