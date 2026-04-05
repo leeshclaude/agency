@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../contexts/AuthContext'
 import Avatar from '../components/ui/Avatar'
@@ -520,7 +521,7 @@ export default function ChatPage() {
         )}
 
         {/* Messages — pt-48 gives first bubble room for context menu above it */}
-        <div className="flex-1 overflow-y-auto px-4 pt-48 pb-4">
+        <div className="flex-1 overflow-y-auto px-4 pt-4 pb-4">
           <div className="max-w-lg mx-auto space-y-4">
             {loading ? (
               <div className="text-center py-12" style={{ color: '#6B4A57' }}>Loading…</div>
@@ -790,7 +791,7 @@ function AdminDMInbox({ adminProfile }) {
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto px-4 pt-48 pb-4">
+        <div className="flex-1 overflow-y-auto px-4 pt-4 pb-4">
           <div className="max-w-lg mx-auto space-y-4">
             {threadLoading ? (
               <div className="text-center py-12" style={{ color: '#6B4A57' }}>Loading…</div>
@@ -1126,28 +1127,25 @@ const QUICK_REACTIONS = ['❤️', '😂', '😮', '😢', '👏', '🔥']
 
 function MessageBubble({ message, isOwn, isFirst, isLast, canDelete, canPin, onDelete, onPin, reactions, currentUserId, onReact }) {
   const [showMenu, setShowMenu] = useState(false)
+  const [menuPos, setMenuPos] = useState(null)
   const [copyDone, setCopyDone] = useState(false)
   const longPressTimer = useRef(null)
-  const menuRef = useRef(null)
+  const bubbleRef = useRef(null)
 
-  // Close menu when tapping outside
-  useEffect(() => {
-    if (!showMenu) return
-    function onOutside(e) {
-      if (menuRef.current && !menuRef.current.contains(e.target)) {
-        setShowMenu(false)
-      }
+  function openMenu() {
+    if (bubbleRef.current) {
+      setMenuPos(bubbleRef.current.getBoundingClientRect())
     }
-    document.addEventListener('mousedown', onOutside)
-    document.addEventListener('touchstart', onOutside)
-    return () => {
-      document.removeEventListener('mousedown', onOutside)
-      document.removeEventListener('touchstart', onOutside)
-    }
-  }, [showMenu])
+    setShowMenu(true)
+  }
+
+  function closeMenu() {
+    setShowMenu(false)
+    setMenuPos(null)
+  }
 
   function handleTouchStart() {
-    longPressTimer.current = setTimeout(() => setShowMenu(true), 450)
+    longPressTimer.current = setTimeout(openMenu, 450)
   }
 
   function handleTouchEnd() {
@@ -1156,27 +1154,28 @@ function MessageBubble({ message, isOwn, isFirst, isLast, canDelete, canPin, onD
 
   function handleBubbleClick(e) {
     e.stopPropagation()
-    setShowMenu((v) => !v)
+    if (showMenu) closeMenu()
+    else openMenu()
   }
 
   async function handleCopy(e) {
     e.stopPropagation()
     try { await navigator.clipboard.writeText(message.content) } catch {}
     setCopyDone(true)
-    setShowMenu(false)
+    closeMenu()
     setTimeout(() => setCopyDone(false), 2000)
   }
 
   function handleDelete(e) {
     e.stopPropagation()
     onDelete()
-    setShowMenu(false)
+    closeMenu()
   }
 
   function handlePin(e) {
     e.stopPropagation()
     onPin()
-    setShowMenu(false)
+    closeMenu()
   }
 
   // Group reactions by emoji
@@ -1208,81 +1207,98 @@ function MessageBubble({ message, isOwn, isFirst, isLast, canDelete, canPin, onD
     borderBottomLeftRadius: isLast ? sharp : sharp,
   }
 
+  // Compute fixed position for portal menu — appears above the bubble
+  const menuStyle = menuPos ? {
+    position: 'fixed',
+    zIndex: 200,
+    bottom: window.innerHeight - menuPos.top + 8,
+    ...(isOwn
+      ? { right: window.innerWidth - menuPos.right }
+      : { left: menuPos.left }),
+    minWidth: 220,
+    maxWidth: 280,
+    background: '#FEF9FB',
+    borderRadius: 16,
+    boxShadow: '0 8px 32px rgba(44,26,34,0.22)',
+    border: '1px solid #FAE8EF',
+    overflow: 'hidden',
+  } : {}
+
   return (
-    <div
-      ref={menuRef}
-      style={{ position: 'relative', display: 'inline-block', maxWidth: '100%' }}
-    >
-      {/* Context menu — appears above bubble on tap/long-press */}
-      {showMenu && (
-        <div
-          className="absolute z-30"
-          style={{
-            bottom: 'calc(100% + 8px)',
-            [isOwn ? 'right' : 'left']: 0,
-            background: '#FEF9FB',
-            borderRadius: 16,
-            boxShadow: '0 4px 24px rgba(0,0,0,0.14)',
-            border: '1px solid #FAE8EF',
-            overflow: 'hidden',
-            minWidth: 220,
-          }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* Quick reactions row */}
+    <div style={{ position: 'relative', display: 'inline-block', maxWidth: '100%' }}>
+
+      {/* Portal overlay — fullscreen dimmed backdrop + floating menu */}
+      {showMenu && menuPos && createPortal(
+        <>
+          {/* Dimmed backdrop */}
           <div
-            className="flex items-center justify-between px-3 py-2.5"
-            style={{ borderBottom: '1px solid #FAE8EF' }}
-          >
-            {QUICK_REACTIONS.map((e) => (
+            style={{
+              position: 'fixed', inset: 0,
+              background: 'rgba(44,26,34,0.35)',
+              zIndex: 199,
+            }}
+            onClick={closeMenu}
+          />
+
+          {/* Floating context menu */}
+          <div style={menuStyle} onClick={(e) => e.stopPropagation()}>
+            {/* Quick reactions row */}
+            <div
+              className="flex items-center justify-between px-3 py-3"
+              style={{ borderBottom: '1px solid #FAE8EF' }}
+            >
+              {QUICK_REACTIONS.map((e) => (
+                <button
+                  key={e}
+                  onClick={(ev) => { ev.stopPropagation(); onReact(e); closeMenu() }}
+                  onTouchEnd={(ev) => { ev.preventDefault(); onReact(e); closeMenu() }}
+                  className="transition-transform active:scale-125"
+                  style={{ fontSize: 26, lineHeight: 1 }}
+                >
+                  {e}
+                </button>
+              ))}
+            </div>
+
+            {/* Copy */}
+            <button
+              onClick={handleCopy}
+              className="w-full flex items-center justify-between px-4 py-3.5 text-sm"
+              style={{ color: '#2C1A22' }}
+            >
+              <span className="font-medium">{copyDone ? 'Copied!' : 'Copy'}</span>
+              <span style={{ fontSize: 17 }}>📋</span>
+            </button>
+
+            {canPin && (
               <button
-                key={e}
-                onClick={(ev) => { ev.stopPropagation(); onReact(e); setShowMenu(false) }}
-                onTouchEnd={(ev) => { ev.preventDefault(); onReact(e); setShowMenu(false) }}
-                className="transition-transform active:scale-125"
-                style={{ fontSize: 24, lineHeight: 1 }}
+                onClick={handlePin}
+                className="w-full flex items-center justify-between px-4 py-3.5 text-sm"
+                style={{ color: '#2C1A22', borderTop: '1px solid #FAE8EF' }}
               >
-                {e}
+                <span className="font-medium">{message.is_pinned ? 'Unpin' : 'Pin'}</span>
+                <span style={{ fontSize: 17 }}>📌</span>
               </button>
-            ))}
+            )}
+
+            {canDelete && (
+              <button
+                onClick={handleDelete}
+                className="w-full flex items-center justify-between px-4 py-3.5 text-sm"
+                style={{ color: '#8C3A55', borderTop: '1px solid #FAE8EF' }}
+              >
+                <span className="font-medium">Delete</span>
+                <span style={{ fontSize: 17 }}>🗑️</span>
+              </button>
+            )}
           </div>
-
-          {/* Action rows */}
-          <button
-            onClick={handleCopy}
-            className="w-full flex items-center justify-between px-4 py-3 text-sm active:bg-gray-50 transition-colors"
-            style={{ color: '#2C1A22' }}
-          >
-            <span>{copyDone ? 'Copied!' : 'Copy'}</span>
-            <span style={{ fontSize: 16 }}>📋</span>
-          </button>
-
-          {canPin && (
-            <button
-              onClick={handlePin}
-              className="w-full flex items-center justify-between px-4 py-3 text-sm active:bg-gray-50 transition-colors"
-              style={{ color: '#2C1A22', borderTop: '1px solid #FAE8EF' }}
-            >
-              <span>{message.is_pinned ? 'Unpin' : 'Pin'}</span>
-              <span style={{ fontSize: 16 }}>📌</span>
-            </button>
-          )}
-
-          {canDelete && (
-            <button
-              onClick={handleDelete}
-              className="w-full flex items-center justify-between px-4 py-3 text-sm active:bg-gray-50 transition-colors"
-              style={{ color: '#8C3A55', borderTop: '1px solid #FAE8EF' }}
-            >
-              <span>Delete</span>
-              <span style={{ fontSize: 16 }}>🗑️</span>
-            </button>
-          )}
-        </div>
+        </>,
+        document.body
       )}
 
       {/* Message bubble */}
       <div
+        ref={bubbleRef}
         className="px-3.5 py-2 text-sm leading-relaxed"
         style={isOwn ? ownStyle : otherStyle}
         onClick={handleBubbleClick}
@@ -1302,7 +1318,7 @@ function MessageBubble({ message, isOwn, isFirst, isLast, canDelete, canPin, onD
               onClick={(e) => { e.stopPropagation(); onReact(emoji) }}
               className="flex items-center gap-0.5 rounded-full text-xs font-medium transition-all"
               style={{
-                background: hasReacted ? '#FAE8EF' : '#FAE8EF',
+                background: '#FAE8EF',
                 border: `1px solid ${hasReacted ? '#D4688A' : 'transparent'}`,
                 color: '#2C1A22',
                 fontSize: 12,

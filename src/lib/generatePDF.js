@@ -70,61 +70,97 @@ export async function generateRateCardPDF(form, avatarUrl) {
         img.src = rawDataUrl
       })
     } catch {
-      // silently skip — PDF will render without photo
+      // silently skip
     }
   }
 
   const W = 210
-  const MARGIN = 18
+  const MARGIN = 16
   const CONTENT_W = W - MARGIN * 2
+  const R = 4   // card corner radius
 
   // ── Palette ───────────────────────────────────
-  const BLOSSOM       = [242, 167, 190]   // #F2A7BE
-  const BLOSSOM_DEEP  = [212, 104, 138]   // #D4688A
-  const BLOSSOM_LIGHT = [250, 232, 239]   // #FAE8EF
-  const PETAL         = [253, 244, 247]   // #FDF4F7
-  const BARK          = [44, 26, 34]      // #2C1A22
-  const BARK_SOFT     = [107, 74, 87]     // #6B4A57
-  const WARM_WHITE    = [254, 249, 251]   // #FEF9FB
-  const BORDER        = [250, 232, 239]   // #FAE8EF (soft)
+  const BLOSSOM       = [242, 167, 190]
+  const BLOSSOM_DEEP  = [212, 104, 138]
+  const BLOSSOM_LIGHT = [250, 232, 239]
+  const PETAL         = [253, 244, 247]
+  const BARK          = [44, 26, 34]
+  const BARK_SOFT     = [107, 74, 87]
+  const WARM_WHITE    = [254, 249, 251]
+  const BORDER        = [232, 210, 220]
   const WHITE         = [255, 255, 255]
 
   let y = 0
 
+  // ── Helpers ───────────────────────────────────
+
+  // Draw a card background (rounded rect fill + border stroke)
+  function card(x, cardY, w, h, fillColor) {
+    doc.setFillColor(...(fillColor || PETAL))
+    doc.roundedRect(x, cardY, w, h, R, R, 'F')
+    doc.setDrawColor(...BORDER)
+    doc.setLineWidth(0.25)
+    doc.roundedRect(x, cardY, w, h, R, R, 'S')
+  }
+
+  // Draw a thin divider line inside a card
+  function divider(cardX, divY, w) {
+    doc.setDrawColor(...BLOSSOM_LIGHT)
+    doc.setLineWidth(0.2)
+    doc.line(cardX + 4, divY, cardX + w - 4, divY)
+  }
+
+  // Section label above a card (uppercase, small, blossom-deep)
+  function sectionLabel(title, subtitle) {
+    doc.setFontSize(7)
+    doc.setTextColor(...BLOSSOM_DEEP)
+    doc.setFont('helvetica', 'bold')
+    doc.text(title.toUpperCase(), MARGIN, y + 4)
+    if (subtitle) {
+      doc.setFontSize(7)
+      doc.setFont('helvetica', 'normal')
+      doc.setTextColor(...BARK_SOFT)
+      doc.text(subtitle, W - MARGIN, y + 4, { align: 'right' })
+    }
+    y += 7
+  }
+
   // ── HEADER BLOCK ─────────────────────────────
+  const HEADER_H = 50
   doc.setFillColor(...BLOSSOM)
-  doc.rect(0, 0, W, 48, 'F')
+  doc.rect(0, 0, W, HEADER_H, 'F')
+
+  // Top accent stripe
   doc.setFillColor(...BLOSSOM_DEEP)
-  doc.rect(0, 0, W, 4, 'F')
+  doc.rect(0, 0, W, 3.5, 'F')
+
+  // Bottom accent stripe
   doc.setFillColor(...BLOSSOM_LIGHT)
-  doc.rect(0, 44, W, 4, 'F')
+  doc.rect(0, HEADER_H - 3.5, W, 3.5, 'F')
 
-  // Brand labels
-  doc.setFontSize(7.5)
-  doc.setTextColor(...WHITE)
-  doc.setFont('helvetica', 'normal')
-  doc.text('MEDIA RATE CARD', MARGIN, 12)
-  doc.text('The Mama Edit', W - MARGIN, 12, { align: 'right' })
-
-  // Creator name
-  doc.setFontSize(26)
+  // "MEDIA RATE CARD" label — left aligned
+  doc.setFontSize(7)
   doc.setTextColor(...WHITE)
   doc.setFont('helvetica', 'bold')
-  doc.text(form.name, MARGIN, 27)
+  doc.text('MEDIA RATE CARD', MARGIN, 12)
 
-  // Handle
+  // Creator name
+  doc.setFontSize(24)
+  doc.setTextColor(...WHITE)
+  doc.setFont('helvetica', 'bold')
+  doc.text(form.name, MARGIN, 28)
+
+  // Instagram handle (clickable)
   const handle = form.instagram_handle.startsWith('@')
     ? form.instagram_handle
     : `@${form.instagram_handle}`
-  doc.setFontSize(11)
+  doc.setFontSize(10)
   doc.setFont('helvetica', 'normal')
   doc.setTextColor(...WHITE)
-  doc.text(handle, MARGIN, 36)
-
-  // Make handle a clickable Instagram link
+  doc.text(handle, MARGIN, 37)
   const igUrl = `https://www.instagram.com/${handle.replace('@', '')}`
   const handleW = doc.getTextWidth(handle)
-  doc.link(MARGIN, 32, handleW, 6, { url: igUrl })
+  doc.link(MARGIN, 33, handleW, 6, { url: igUrl })
 
   // Niche tags
   const nicheArr = Array.isArray(form.niche) ? [...form.niche] : (form.niche ? [form.niche] : [])
@@ -132,66 +168,26 @@ export async function generateRateCardPDF(form, avatarUrl) {
     .map((n) => n === 'Other' && form.niche_other ? form.niche_other : n)
     .join('  ·  ')
   if (nicheText) {
-    doc.setFontSize(8)
+    doc.setFontSize(7.5)
     doc.setTextColor(...WHITE)
-    doc.text(nicheText, MARGIN, 43)
+    doc.text(nicheText, MARGIN, 44.5)
   }
 
-  // Avatar — circular crop (pre-rendered via canvas), top-right of header
+  // Avatar — top-right of header
   if (circularAvatarDataUrl) {
-    const AV = 26
+    const AV = 28
     const ax = W - MARGIN - AV
     const ay = 10
     doc.addImage(circularAvatarDataUrl, 'PNG', ax, ay, AV, AV, '', 'FAST')
-    // White ring border
     doc.setDrawColor(...WHITE)
-    doc.setLineWidth(1.2)
+    doc.setLineWidth(1.5)
     doc.circle(ax + AV / 2, ay + AV / 2, AV / 2, 'S')
   }
 
-  y = 55
-
-  // ── Helpers ───────────────────────────────────
-  function sectionHeader(title, subtitle) {
-    doc.setFillColor(...BLOSSOM_DEEP)
-    doc.rect(MARGIN, y, 3, 5.5, 'F')
-    doc.setFontSize(8.5)
-    doc.setTextColor(...BARK)
-    doc.setFont('helvetica', 'bold')
-    doc.text(title, MARGIN + 6, y + 4.5)
-    if (subtitle) {
-      doc.setFontSize(7.5)
-      doc.setFont('helvetica', 'normal')
-      doc.setTextColor(...BARK_SOFT)
-      doc.text(subtitle, W - MARGIN, y + 4.5, { align: 'right' })
-    }
-    y += 8
-  }
-
-  // Stat card: label bold+dark, value large+bold
-  const CARD_H = 15
-  const GAP = 3
-
-  function statCard(x, cardY, w, label, value) {
-    doc.setFillColor(...PETAL)
-    doc.roundedRect(x, cardY, w, CARD_H, 2, 2, 'F')
-    doc.setDrawColor(...BORDER)
-    doc.setLineWidth(0.25)
-    doc.roundedRect(x, cardY, w, CARD_H, 2, 2, 'S')
-    // Label — darker and bolder
-    doc.setFontSize(7.5)
-    doc.setTextColor(...BARK_SOFT)
-    doc.setFont('helvetica', 'bold')
-    doc.text(label, x + 4, cardY + 5.5)
-    // Value — large bold dark
-    doc.setFontSize(13)
-    doc.setTextColor(...BARK)
-    doc.setFont('helvetica', 'bold')
-    doc.text(String(value), x + 4, cardY + 12.5)
-  }
+  y = HEADER_H + 8
 
   // ── AUDIENCE OVERVIEW ─────────────────────────
-  sectionHeader('AUDIENCE OVERVIEW')
+  sectionLabel('Audience Overview')
 
   const keyStats = [
     { label: 'Followers', value: parseInt(form.follower_count || 0).toLocaleString() },
@@ -215,6 +211,8 @@ export async function generateRateCardPDF(form, avatarUrl) {
   ].filter(Boolean)
 
   const COLS = 3
+  const GAP = 3
+  const CARD_H = 16
   const cardW = (CONTENT_W - GAP * (COLS - 1)) / COLS
 
   keyStats.forEach(({ label, value }, i) => {
@@ -222,22 +220,32 @@ export async function generateRateCardPDF(form, avatarUrl) {
     const row = Math.floor(i / COLS)
     const cx = MARGIN + col * (cardW + GAP)
     const cy = y + row * (CARD_H + GAP)
-    statCard(cx, cy, cardW, label, value)
+
+    card(cx, cy, cardW, CARD_H, PETAL)
+
+    doc.setFontSize(7)
+    doc.setTextColor(...BARK_SOFT)
+    doc.setFont('helvetica', 'bold')
+    doc.text(label.toUpperCase(), cx + 4, cy + 5.5)
+
+    doc.setFontSize(13)
+    doc.setTextColor(...BARK)
+    doc.setFont('helvetica', 'bold')
+    doc.text(String(value), cx + 4, cy + 13)
   })
 
-  y += Math.ceil(keyStats.length / COLS) * (CARD_H + GAP) + 1
+  y += Math.ceil(keyStats.length / COLS) * (CARD_H + GAP) + 2
 
-  // ── AUDIENCE DEMOGRAPHICS (compact) ───────────
+  // ── AUDIENCE DEMOGRAPHICS ─────────────────────
   const hasDemoSection =
     form.audience_female_pct || form.audience_male_pct ||
     form.top_country ||
     form.content_mix_reels_pct || form.content_mix_stories_pct || form.content_mix_posts_pct
 
   if (hasDemoSection) {
-    y += 5
-    sectionHeader('AUDIENCE DEMOGRAPHICS')
+    y += 4
+    sectionLabel('Audience Demographics')
 
-    // Build compact rows: label on left, value on right
     const demoRows = []
 
     if (form.audience_female_pct || form.audience_male_pct) {
@@ -248,7 +256,6 @@ export async function generateRateCardPDF(form, avatarUrl) {
       demoRows.push({ label: 'Gender Split', value: parts.join('  /  ') })
     }
 
-    // All countries in one row
     const countries = [
       form.top_country && `${form.top_country}${form.top_country_pct ? ` (${form.top_country_pct}%)` : ''}`,
       form.country_2 && `${form.country_2}${form.country_2_pct ? ` (${form.country_2_pct}%)` : ''}`,
@@ -268,50 +275,57 @@ export async function generateRateCardPDF(form, avatarUrl) {
       demoRows.push({ label: 'Content Mix', value: mixParts.join('  ·  ') })
     }
 
-    const ROW_H = 8
+    const ROW_H = 9
+    const VPAD = 2
+    const demoCardH = demoRows.length * ROW_H + VPAD * 2
+
+    card(MARGIN, y, CONTENT_W, demoCardH, WARM_WHITE)
+
     demoRows.forEach(({ label, value }, i) => {
-      const rowY = y + i * ROW_H
-      if (i % 2 === 0) {
-        doc.setFillColor(...WARM_WHITE)
-        doc.rect(MARGIN, rowY, CONTENT_W, ROW_H, 'F')
-      }
-      // Label
+      const rowY = y + VPAD + i * ROW_H
+
+      if (i > 0) divider(MARGIN, rowY, CONTENT_W)
+
       doc.setFontSize(8)
       doc.setTextColor(...BARK_SOFT)
       doc.setFont('helvetica', 'bold')
-      doc.text(label, MARGIN + 4, rowY + 5.5)
-      // Value
+      doc.text(label, MARGIN + 5, rowY + 6.5)
+
       doc.setFontSize(8.5)
       doc.setTextColor(...BARK)
       doc.setFont('helvetica', 'normal')
-      doc.text(value, W - MARGIN - 4, rowY + 5.5, { align: 'right' })
+      doc.text(value, W - MARGIN - 5, rowY + 6.5, { align: 'right' })
     })
 
-    // Border under demographics
-    doc.setDrawColor(...BORDER)
-    doc.setLineWidth(0.25)
-    doc.rect(MARGIN, y, CONTENT_W, demoRows.length * ROW_H, 'S')
-
-    y += demoRows.length * ROW_H + 2
+    y += demoCardH + 2
   }
 
   y += 6
 
   // ── CONTENT & PRICING ─────────────────────────
-  sectionHeader('CONTENT & PRICING', 'AUD, excl. GST')
+  sectionLabel('Content & Pricing', 'AUD · excl. GST')
 
   const followers = parseInt(form.follower_count || 0)
   const selectedTypes = form.content_types || []
+  const PRICE_ROW_H = 9
+  const HEADER_ROW_H = 9
+  const pricingCardH = HEADER_ROW_H + selectedTypes.length * PRICE_ROW_H + 2
 
-  // Table header row
+  // Outer card
+  card(MARGIN, y, CONTENT_W, pricingCardH, WARM_WHITE)
+
+  // Colored header band — rounded top, straight bottom
   doc.setFillColor(...BLOSSOM_DEEP)
-  doc.rect(MARGIN, y, CONTENT_W, 8, 'F')
-  doc.setFontSize(8.5)
+  doc.roundedRect(MARGIN, y, CONTENT_W, HEADER_ROW_H, R, R, 'F')
+  // Cover bottom-rounded corners of header band
+  doc.rect(MARGIN, y + R, CONTENT_W, HEADER_ROW_H - R, 'F')
+
+  doc.setFontSize(8)
   doc.setTextColor(...WHITE)
   doc.setFont('helvetica', 'bold')
-  doc.text('Content Type', MARGIN + 5, y + 5.5)
-  doc.text('Rate', W - MARGIN - 5, y + 5.5, { align: 'right' })
-  y += 8
+  doc.text('CONTENT TYPE', MARGIN + 5, y + 6.5)
+  doc.text('RATE', W - MARGIN - 5, y + 6.5, { align: 'right' })
+  y += HEADER_ROW_H
 
   selectedTypes.forEach((key, i) => {
     const label = CONTENT_TYPE_LABELS[key] || key
@@ -321,35 +335,30 @@ export async function generateRateCardPDF(form, avatarUrl) {
       ? `$${parseFloat(rate).toLocaleString()}`
       : `$${s.min.toLocaleString()}${s.max ? ` – $${s.max.toLocaleString()}` : '+'}`
 
-    const ROW_H = 8.5
-    const rowY = y + i * ROW_H
+    const rowY = y + i * PRICE_ROW_H
 
-    if (i % 2 === 0) {
-      doc.setFillColor(...WARM_WHITE)
-      doc.rect(MARGIN, rowY, CONTENT_W, ROW_H, 'F')
-    }
+    if (i > 0) divider(MARGIN, rowY, CONTENT_W)
+
+    // Left accent bar per row
     doc.setFillColor(...BLOSSOM_LIGHT)
-    doc.rect(MARGIN, rowY, 1.5, ROW_H, 'F')
+    doc.rect(MARGIN, rowY, 2, PRICE_ROW_H, 'F')
 
-    doc.setFontSize(9.5)
+    doc.setFontSize(9)
     doc.setTextColor(...BARK)
     doc.setFont('helvetica', 'normal')
-    doc.text(label, MARGIN + 6, rowY + 5.8)
+    doc.text(label, MARGIN + 7, rowY + 6.5)
 
     doc.setFont('helvetica', 'bold')
     doc.setTextColor(...BLOSSOM_DEEP)
-    doc.text(rateStr, W - MARGIN - 5, rowY + 5.8, { align: 'right' })
+    doc.text(rateStr, W - MARGIN - 5, rowY + 6.5, { align: 'right' })
   })
 
-  y += selectedTypes.length * 8.5
+  y += selectedTypes.length * PRICE_ROW_H + 4
 
-  doc.setDrawColor(...BORDER)
-  doc.setLineWidth(0.3)
-  doc.line(MARGIN, y, W - MARGIN, y)
-  y += 7
+  y += 6
 
   // ── COLLABORATION PREFERENCES ─────────────────
-  sectionHeader('COLLABORATION PREFERENCES')
+  sectionLabel('Collaboration Preferences')
 
   const giftedLabels = { yes: 'Yes', no: 'No', depends: 'Depends on brand' }
   const whitelistLabels = { yes: 'Yes', no: 'No', what_is_this: 'Not sure yet' }
@@ -364,32 +373,30 @@ export async function generateRateCardPDF(form, avatarUrl) {
     ['Whitelisting / content boosting', whitelistLabels[form.open_to_whitelisting] || '—'],
   ]
 
+  const PREF_ROW_H = 9
+  const PREF_VPAD = 2
+  const prefsCardH = prefs.length * PREF_ROW_H + PREF_VPAD * 2
+
+  card(MARGIN, y, CONTENT_W, prefsCardH, WARM_WHITE)
+
   prefs.forEach(([label, value], i) => {
-    const ROW_H = 8
-    const rowY = y + i * ROW_H
+    const rowY = y + PREF_VPAD + i * PREF_ROW_H
 
-    if (i % 2 === 0) {
-      doc.setFillColor(...WARM_WHITE)
-      doc.rect(MARGIN, rowY, CONTENT_W, ROW_H, 'F')
-    }
+    if (i > 0) divider(MARGIN, rowY, CONTENT_W)
 
-    doc.setFontSize(9)
+    doc.setFontSize(8.5)
     doc.setTextColor(...BARK_SOFT)
     doc.setFont('helvetica', 'normal')
-    doc.text(label, MARGIN + 5, rowY + 5.5)
+    doc.text(label, MARGIN + 5, rowY + 6.5)
 
     const isYes = value === 'Yes'
     doc.setFont('helvetica', 'bold')
     if (isYes) doc.setTextColor(...BLOSSOM_DEEP)
     else doc.setTextColor(...BARK)
-    doc.text(value, W - MARGIN - 5, rowY + 5.5, { align: 'right' })
+    doc.text(value, W - MARGIN - 5, rowY + 6.5, { align: 'right' })
   })
 
-  // Border under prefs
-  doc.setDrawColor(...BORDER)
-  doc.setLineWidth(0.25)
-  const prefsH = prefs.length * 8
-  doc.rect(MARGIN, y, CONTENT_W, prefsH, 'S')
+  y += prefsCardH
 
   // ── FOOTER ────────────────────────────────────
   const footerY = 284
@@ -399,10 +406,19 @@ export async function generateRateCardPDF(form, avatarUrl) {
   doc.rect(0, footerY + 3, W, 11, 'F')
 
   const monthYear = new Date().toLocaleDateString('en-AU', { month: 'long', year: 'numeric' })
-  doc.setFontSize(7.5)
+  doc.setFontSize(7)
   doc.setTextColor(...WHITE)
   doc.setFont('helvetica', 'normal')
   doc.text(`Rates current as of ${monthYear}`, MARGIN, footerY + 10)
+
+  // "The Mama Edit" centered in footer
+  doc.setFontSize(8)
+  doc.setFont('helvetica', 'bold')
+  doc.setTextColor(...WHITE)
+  doc.text('The Mama Edit', W / 2, footerY + 10, { align: 'center' })
+
+  doc.setFontSize(7)
+  doc.setFont('helvetica', 'normal')
   doc.text('All rates are in AUD and exclude GST', W - MARGIN, footerY + 10, { align: 'right' })
 
   // ── SAVE ─────────────────────────────────────
