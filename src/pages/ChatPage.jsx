@@ -252,6 +252,7 @@ export default function ChatPage() {
 
     setSending(true)
     setInput('')
+    if (inputRef.current) inputRef.current.style.height = 'auto'
 
     const { error } = await supabase.from('messages').insert({
       user_id: profile.id,
@@ -628,20 +629,31 @@ export default function ChatPage() {
             paddingBottom: 'calc(env(safe-area-inset-bottom) + 80px)',
           }}
         >
-          <form onSubmit={sendMessage} className="max-w-lg mx-auto flex gap-2">
-            <input
+          <form onSubmit={sendMessage} className="max-w-lg mx-auto flex gap-2 items-end">
+            <textarea
               ref={inputRef}
               className="input-field flex-1"
               value={input}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={(e) => {
+                setInput(e.target.value)
+                e.target.style.height = 'auto'
+                e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px'
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault()
+                  sendMessage(e)
+                }
+              }}
               placeholder={`Message ${activeChannelData?.emoji} ${activeChannelData?.label}…`}
               autoComplete="off"
-              style={{ paddingTop: 10, paddingBottom: 10 }}
+              rows={1}
+              style={{ paddingTop: 10, paddingBottom: 10, resize: 'none', overflowY: 'hidden', lineHeight: '1.45', minHeight: 40 }}
             />
             <button
               type="submit"
               disabled={!input.trim() || sending}
-              className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-all active:scale-95"
+              className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-all active:scale-95 flex-shrink-0"
               style={{
                 background: input.trim() ? '#D4688A' : '#FAE8EF',
                 color: input.trim() ? '#fff' : '#6B4A57',
@@ -669,6 +681,7 @@ function AdminDMInbox({ adminProfile }) {
   const [threadLoading, setThreadLoading] = useState(false)
   const [sending, setSending] = useState(false)
   const bottomRef = useRef(null)
+  const replyRef = useRef(null)
 
   useEffect(() => {
     fetchConversations()
@@ -753,6 +766,7 @@ function AdminDMInbox({ adminProfile }) {
     if (!text || sending || !activeMember) return
     setSending(true)
     setInput('')
+    if (replyRef.current) replyRef.current.style.height = 'auto'
     await supabase.from('admin_dms').insert({
       member_id: activeMember.id,
       sender_id: adminProfile.id,
@@ -760,6 +774,7 @@ function AdminDMInbox({ adminProfile }) {
     })
     await fetchThread(activeMember.id)
     setSending(false)
+    replyRef.current?.focus()
   }
 
   if (activeMember) {
@@ -850,14 +865,23 @@ function AdminDMInbox({ adminProfile }) {
             paddingBottom: 'calc(env(safe-area-inset-bottom) + 80px)',
           }}
         >
-          <form onSubmit={sendReply} className="max-w-lg mx-auto flex gap-2">
-            <input
+          <form onSubmit={sendReply} className="max-w-lg mx-auto flex gap-2 items-end">
+            <textarea
+              ref={replyRef}
               className="input-field flex-1"
               value={input}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={(e) => {
+                setInput(e.target.value)
+                e.target.style.height = 'auto'
+                e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px'
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendReply(e) }
+              }}
               placeholder={`Reply to ${activeMember.full_name}…`}
               autoComplete="off"
-              style={{ paddingTop: 10, paddingBottom: 10 }}
+              rows={1}
+              style={{ paddingTop: 10, paddingBottom: 10, resize: 'none', overflowY: 'hidden', lineHeight: '1.45', minHeight: 40 }}
             />
             <button
               type="submit"
@@ -1003,6 +1027,7 @@ function DMAdminThread({ profile }) {
     if (!text || sending) return
     setSending(true)
     setInput('')
+    if (inputRef.current) inputRef.current.style.height = 'auto'
     await supabase.from('admin_dms').insert({
       member_id: profile.id,
       sender_id: profile.id,
@@ -1096,15 +1121,23 @@ function DMAdminThread({ profile }) {
           paddingBottom: 'calc(env(safe-area-inset-bottom) + 80px)',
         }}
       >
-        <form onSubmit={sendDM} className="max-w-lg mx-auto flex gap-2">
-          <input
+        <form onSubmit={sendDM} className="max-w-lg mx-auto flex gap-2 items-end">
+          <textarea
             ref={inputRef}
             className="input-field flex-1"
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={(e) => {
+              setInput(e.target.value)
+              e.target.style.height = 'auto'
+              e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px'
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendDM(e) }
+            }}
             placeholder="Message admin…"
             autoComplete="off"
-            style={{ paddingTop: 10, paddingBottom: 10 }}
+            rows={1}
+            style={{ paddingTop: 10, paddingBottom: 10, resize: 'none', overflowY: 'hidden', lineHeight: '1.45', minHeight: 40 }}
           />
           <button
             type="submit"
@@ -1196,6 +1229,8 @@ function MessageBubble({ message, isOwn, isFirst, isLast, canDelete, canPin, onD
     borderTopRightRadius: isFirst ? radius : sharp,
     borderBottomRightRadius: isLast ? sharp : sharp,
     borderBottomLeftRadius: radius,
+    whiteSpace: 'pre-wrap',
+    wordBreak: 'break-word',
   }
   const otherStyle = {
     background: '#FEF9FB',
@@ -1205,6 +1240,8 @@ function MessageBubble({ message, isOwn, isFirst, isLast, canDelete, canPin, onD
     borderTopRightRadius: radius,
     borderBottomRightRadius: radius,
     borderBottomLeftRadius: isLast ? sharp : sharp,
+    whiteSpace: 'pre-wrap',
+    wordBreak: 'break-word',
   }
 
   // Compute fixed position for portal menu — appears above the bubble

@@ -105,7 +105,7 @@ export default function HomePage() {
         file_name: fileName,
         updated_by: profile.id,
       }
-      await supabase.from('announcements').update(updated).eq('id', 1)
+      await supabase.from('announcements').upsert({ id: 1, ...updated })
       setAnnouncement((prev) => ({ ...prev, ...updated }))
       setEditingAnnouncement(false)
     } catch (e) {
@@ -230,7 +230,7 @@ export default function HomePage() {
                     {!announcement?.image_url && <span className="text-lg flex-shrink-0">📢</span>}
                     <div className="flex-1 min-w-0">
                       {announcement?.text && (
-                        <p className="text-sm" style={{ fontFamily: 'DM Sans, sans-serif', fontWeight: 500, color: '#2C1A22' }}>
+                        <p className="text-sm" style={{ fontFamily: 'DM Sans, sans-serif', fontWeight: 500, color: '#2C1A22', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
                           {announcement.text}
                         </p>
                       )}
