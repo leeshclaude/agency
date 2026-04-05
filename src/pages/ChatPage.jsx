@@ -340,12 +340,12 @@ export default function ChatPage() {
   const totalGroupUnread = Object.values(unreadCounts).reduce((a, b) => a + b, 0)
 
   return (
-    <div className="flex flex-col" style={{ height: '100svh', background: '#faf8f6' }}>
+    <div className="flex flex-col" style={{ height: '100svh', background: '#FEF9FB' }}>
 
       {/* Header */}
       <div
         className="flex-shrink-0 pt-12 pb-3"
-        style={{ background: '#fff', borderBottom: '1px solid #ece4dc' }}
+        style={{ background: '#FEF9FB', borderBottom: '1px solid #FAE8EF' }}
       >
         <div className="max-w-lg mx-auto px-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -353,14 +353,14 @@ export default function ChatPage() {
               <button
                 onClick={backToList}
                 className="text-base font-medium mr-1"
-                style={{ color: '#b09d8a' }}
+                style={{ color: '#6B4A57' }}
               >
                 ←
               </button>
             )}
             <div>
               <p className="section-label mb-0.5">Community</p>
-              <h1 className="text-lg font-semibold" style={{ color: '#302820' }}>
+              <h1 className="text-lg" style={{ fontFamily: 'DM Sans, sans-serif', fontWeight: 600, color: '#2C1A22' }}>
                 {headerTitle}
               </h1>
             </div>
@@ -370,21 +370,21 @@ export default function ChatPage() {
           {showModeToggle && (
             <div
               className="flex rounded-xl overflow-hidden"
-              style={{ border: '1px solid #ddd2c7' }}
+              style={{ border: '1px solid #F2A7BE' }}
             >
               <button
                 onClick={() => { setMode('community'); setActiveChannel(null); setMessages([]) }}
                 className="px-3 py-1.5 text-xs font-medium transition-all flex items-center gap-1"
                 style={{
-                  background: mode === 'community' ? '#c9a99a' : '#fff',
-                  color: mode === 'community' ? '#fff' : '#8e7a68',
+                  background: mode === 'community' ? '#D4688A' : '#FEF9FB',
+                  color: mode === 'community' ? '#fff' : '#6B4A57',
                 }}
               >
                 💬 Group
                 {totalGroupUnread > 0 && mode !== 'community' && (
                   <span
                     className="inline-flex items-center justify-center rounded-full font-semibold"
-                    style={{ background: '#c9a99a', color: '#fff', fontSize: 9, minWidth: 14, height: 14, padding: '0 3px' }}
+                    style={{ background: '#D4688A', color: '#fff', fontSize: 9, minWidth: 14, height: 14, padding: '0 3px' }}
                   >
                     {totalGroupUnread > 9 ? '9+' : totalGroupUnread}
                   </span>
@@ -398,15 +398,15 @@ export default function ChatPage() {
                 }}
                 className="px-3 py-1.5 text-xs font-medium transition-all flex items-center gap-1"
                 style={{
-                  background: mode === 'dm' ? '#c9a99a' : '#fff',
-                  color: mode === 'dm' ? '#fff' : '#8e7a68',
+                  background: mode === 'dm' ? '#D4688A' : '#FEF9FB',
+                  color: mode === 'dm' ? '#fff' : '#6B4A57',
                 }}
               >
                 💌 Admin
                 {dmUnread > 0 && mode !== 'dm' && (
                   <span
                     className="inline-flex items-center justify-center rounded-full font-semibold"
-                    style={{ background: '#c9a99a', color: '#fff', fontSize: 9, minWidth: 14, height: 14, padding: '0 3px' }}
+                    style={{ background: '#D4688A', color: '#fff', fontSize: 9, minWidth: 14, height: 14, padding: '0 3px' }}
                   >
                     {dmUnread > 9 ? '9+' : dmUnread}
                   </span>
@@ -433,12 +433,12 @@ export default function ChatPage() {
                 key={ch.id}
                 onClick={() => openChannel(ch.id)}
                 className="w-full flex items-center gap-3 px-4 py-3.5 transition-all active:bg-gray-50"
-                style={{ borderBottom: '1px solid #f5f0ec', background: '#fff' }}
+                style={{ borderBottom: '1px solid #FAE8EF', background: '#FEF9FB' }}
               >
                 {/* Channel emoji avatar */}
                 <div
                   className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0"
-                  style={{ background: '#fdf0eb', fontSize: 22 }}
+                  style={{ background: '#FAE8EF', fontSize: 22 }}
                 >
                   {ch.emoji}
                 </div>
@@ -447,13 +447,13 @@ export default function ChatPage() {
                   <div className="flex items-center justify-between gap-2">
                     <p
                       className="font-semibold text-sm"
-                      style={{ color: '#302820', fontWeight: unread > 0 ? 700 : 600 }}
+                      style={{ color: '#2C1A22', fontWeight: unread > 0 ? 700 : 600 }}
                     >
                       {ch.label}
                     </p>
                     <div className="flex items-center gap-2 flex-shrink-0">
                       {preview?.created_at && (
-                        <span className="text-xs" style={{ color: '#b09d8a' }}>
+                        <span className="text-xs" style={{ color: '#6B4A57' }}>
                           {new Date(preview.created_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })}
                         </span>
                       )}
@@ -461,7 +461,7 @@ export default function ChatPage() {
                         <span
                           className="inline-flex items-center justify-center rounded-full font-semibold"
                           style={{
-                            background: '#c9a99a',
+                            background: '#D4688A',
                             color: '#fff',
                             fontSize: 10,
                             minWidth: 18,
@@ -476,7 +476,7 @@ export default function ChatPage() {
                   </div>
                   <p
                     className="text-xs truncate mt-0.5"
-                    style={{ color: unread > 0 ? '#4e4238' : '#b09d8a', fontWeight: unread > 0 ? 500 : 400 }}
+                    style={{ color: unread > 0 ? '#2C1A22' : '#6B4A57', fontWeight: unread > 0 ? 500 : 400 }}
                   >
                     {preview
                       ? `${preview.profiles?.full_name}: ${preview.content}`
@@ -496,14 +496,14 @@ export default function ChatPage() {
         {pinnedMessage && (
           <div
             className="flex-shrink-0 flex items-center gap-3 px-4 py-2.5"
-            style={{ background: '#fdf6f3', borderBottom: '1px solid #ece4dc' }}
+            style={{ background: '#FEF9FB', borderBottom: '1px solid #FAE8EF' }}
           >
             <span style={{ fontSize: 14, flexShrink: 0 }}>📌</span>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-semibold mb-0.5" style={{ color: '#b09d8a' }}>
+              <p className="text-xs font-semibold mb-0.5" style={{ color: '#6B4A57' }}>
                 {pinnedMessage.profiles?.full_name}
               </p>
-              <p className="text-xs truncate" style={{ color: '#4e4238' }}>
+              <p className="text-xs truncate" style={{ color: '#2C1A22' }}>
                 {pinnedMessage.content}
               </p>
             </div>
@@ -511,7 +511,7 @@ export default function ChatPage() {
               <button
                 onClick={unpinMessage}
                 className="flex-shrink-0 text-xs px-2 py-1 rounded-lg"
-                style={{ color: '#b09d8a', background: '#ece4dc' }}
+                style={{ color: '#6B4A57', background: '#FAE8EF' }}
               >
                 Unpin
               </button>
@@ -523,14 +523,14 @@ export default function ChatPage() {
         <div className="flex-1 overflow-y-auto px-4 py-4">
           <div className="max-w-lg mx-auto space-y-4">
             {loading ? (
-              <div className="text-center py-12" style={{ color: '#b09d8a' }}>Loading…</div>
+              <div className="text-center py-12" style={{ color: '#6B4A57' }}>Loading…</div>
             ) : messages.length === 0 ? (
               <div className="text-center py-16">
                 <span style={{ fontSize: 32 }}>{activeChannelData?.emoji}</span>
-                <p className="mt-3 text-sm font-medium" style={{ color: '#4e4238' }}>
+                <p className="mt-3 text-sm font-medium" style={{ color: '#2C1A22' }}>
                   {activeChannelData?.label}
                 </p>
-                <p className="mt-1 text-sm" style={{ color: '#b09d8a' }}>
+                <p className="mt-1 text-sm" style={{ color: '#6B4A57' }}>
                   No messages yet. Be the first to post!
                 </p>
               </div>
@@ -557,11 +557,11 @@ export default function ChatPage() {
                     <div className={`flex flex-col gap-1 ${isOwn ? 'items-end' : 'items-start'}`}>
                       {!isOwn && (
                         <div className="flex items-center gap-1.5 px-1 mb-0.5 flex-wrap">
-                          <span className="text-xs font-semibold" style={{ color: '#4e4238' }}>{name}</span>
+                          <span className="text-xs font-semibold" style={{ color: '#2C1A22' }}>{name}</span>
                           {senderIsAdmin && (
                             <span
                               className="text-xs px-1.5 py-0.5 rounded-full font-medium"
-                              style={{ background: '#edd5cc', color: '#8e7a68', fontSize: 10 }}
+                              style={{ background: '#FAE8EF', color: '#6B4A57', fontSize: 10 }}
                             >
                               Admin
                             </span>
@@ -572,7 +572,7 @@ export default function ChatPage() {
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-xs"
-                              style={{ color: '#c9a99a' }}
+                              style={{ color: '#D4688A' }}
                             >
                               {handle} ↗
                             </a>
@@ -603,7 +603,7 @@ export default function ChatPage() {
                         )
                       })}
 
-                      <span className="text-xs px-1" style={{ color: '#b09d8a' }}>
+                      <span className="text-xs px-1" style={{ color: '#6B4A57' }}>
                         {new Date(group.messages[group.messages.length - 1].created_at).toLocaleTimeString('en-AU', {
                           hour: 'numeric',
                           minute: '2-digit',
@@ -622,8 +622,8 @@ export default function ChatPage() {
         <div
           className="flex-shrink-0 px-4 py-3"
           style={{
-            background: '#fff',
-            borderTop: '1px solid #ece4dc',
+            background: '#FEF9FB',
+            borderTop: '1px solid #FAE8EF',
             paddingBottom: 'calc(env(safe-area-inset-bottom) + 80px)',
           }}
         >
@@ -642,8 +642,8 @@ export default function ChatPage() {
               disabled={!input.trim() || sending}
               className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-all active:scale-95"
               style={{
-                background: input.trim() ? '#c9a99a' : '#ece4dc',
-                color: input.trim() ? '#fff' : '#b09d8a',
+                background: input.trim() ? '#D4688A' : '#FAE8EF',
+                color: input.trim() ? '#fff' : '#6B4A57',
               }}
             >
               <SendIcon />
@@ -733,22 +733,22 @@ function AdminDMInbox({ adminProfile }) {
         {/* Thread header */}
         <div
           className="flex-shrink-0 flex items-center gap-3 px-4 py-3"
-          style={{ background: '#fff', borderBottom: '1px solid #ece4dc' }}
+          style={{ background: '#FEF9FB', borderBottom: '1px solid #FAE8EF' }}
         >
           <button
             onClick={() => { setActiveMember(null); setThreadMessages([]) }}
             className="text-sm font-medium flex-shrink-0"
-            style={{ color: '#b09d8a' }}
+            style={{ color: '#6B4A57' }}
           >
             ←
           </button>
           <Avatar avatarUrl={activeMember.avatar_url} name={activeMember.full_name} size={36} />
           <div className="flex-1 min-w-0">
-            <p className="font-semibold text-sm" style={{ color: '#302820' }}>{activeMember.full_name}</p>
+            <p className="font-semibold text-sm" style={{ color: '#2C1A22' }}>{activeMember.full_name}</p>
             <a
               href={`https://instagram.com/${activeMember.instagram_handle?.replace('@', '')}`}
               target="_blank" rel="noopener noreferrer"
-              className="text-xs" style={{ color: '#c9a99a' }}
+              className="text-xs" style={{ color: '#D4688A' }}
             >
               {activeMember.instagram_handle} ↗
             </a>
@@ -759,7 +759,7 @@ function AdminDMInbox({ adminProfile }) {
         <div className="flex-1 overflow-y-auto px-4 py-4">
           <div className="max-w-lg mx-auto space-y-3">
             {threadLoading ? (
-              <div className="text-center py-12" style={{ color: '#b09d8a' }}>Loading…</div>
+              <div className="text-center py-12" style={{ color: '#6B4A57' }}>Loading…</div>
             ) : threadMessages.map((msg) => {
               const fromAdmin = msg.sender?.is_admin
               return (
@@ -771,15 +771,15 @@ function AdminDMInbox({ adminProfile }) {
                     <div
                       className="px-3.5 py-2.5 text-sm leading-relaxed"
                       style={{
-                        background: fromAdmin ? '#c9a99a' : '#f5f0ec',
-                        color: fromAdmin ? '#fff' : '#302820',
+                        background: fromAdmin ? '#D4688A' : '#FAE8EF',
+                        color: fromAdmin ? '#fff' : '#2C1A22',
                         borderRadius: fromAdmin ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
                         maxWidth: 260,
                       }}
                     >
                       {msg.content}
                     </div>
-                    <span className="text-xs px-1" style={{ color: '#b09d8a' }}>
+                    <span className="text-xs px-1" style={{ color: '#6B4A57' }}>
                       {new Date(msg.created_at).toLocaleTimeString('en-AU', { hour: 'numeric', minute: '2-digit' })}
                     </span>
                   </div>
@@ -794,8 +794,8 @@ function AdminDMInbox({ adminProfile }) {
         <div
           className="flex-shrink-0 px-4 py-3"
           style={{
-            background: '#fff',
-            borderTop: '1px solid #ece4dc',
+            background: '#FEF9FB',
+            borderTop: '1px solid #FAE8EF',
             paddingBottom: 'calc(env(safe-area-inset-bottom) + 80px)',
           }}
         >
@@ -813,8 +813,8 @@ function AdminDMInbox({ adminProfile }) {
               disabled={!input.trim() || sending}
               className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-all active:scale-95"
               style={{
-                background: input.trim() ? '#c9a99a' : '#ece4dc',
-                color: input.trim() ? '#fff' : '#b09d8a',
+                background: input.trim() ? '#D4688A' : '#FAE8EF',
+                color: input.trim() ? '#fff' : '#6B4A57',
               }}
             >
               <SendIcon />
@@ -828,11 +828,11 @@ function AdminDMInbox({ adminProfile }) {
   return (
     <div className="flex-1 overflow-y-auto">
       {loading ? (
-        <div className="text-center py-12" style={{ color: '#b09d8a' }}>Loading…</div>
+        <div className="text-center py-12" style={{ color: '#6B4A57' }}>Loading…</div>
       ) : conversations.length === 0 ? (
         <div className="text-center py-16">
           <span style={{ fontSize: 32 }}>💌</span>
-          <p className="mt-3 text-sm" style={{ color: '#b09d8a' }}>No member messages yet</p>
+          <p className="mt-3 text-sm" style={{ color: '#6B4A57' }}>No member messages yet</p>
         </div>
       ) : (
         conversations.map((convo) => (
@@ -840,22 +840,22 @@ function AdminDMInbox({ adminProfile }) {
             key={convo.member_id}
             onClick={() => setActiveMember(convo.profiles)}
             className="w-full flex items-center gap-3 px-4 py-4 transition-all active:bg-gray-50"
-            style={{ borderBottom: '1px solid #f5f0ec', background: '#fff' }}
+            style={{ borderBottom: '1px solid #FAE8EF', background: '#FEF9FB' }}
           >
             <Avatar avatarUrl={convo.profiles?.avatar_url} name={convo.profiles?.full_name} size={48} />
             <div className="flex-1 min-w-0 text-left">
               <div className="flex items-center justify-between gap-2">
-                <p className="font-semibold text-sm" style={{ color: '#302820' }}>
+                <p className="font-semibold text-sm" style={{ color: '#2C1A22' }}>
                   {convo.profiles?.full_name}
                 </p>
-                <span className="text-xs flex-shrink-0" style={{ color: '#b09d8a' }}>
+                <span className="text-xs flex-shrink-0" style={{ color: '#6B4A57' }}>
                   {new Date(convo.created_at).toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })}
                 </span>
               </div>
-              <p className="text-xs mt-0.5" style={{ color: '#8e7a68' }}>
+              <p className="text-xs mt-0.5" style={{ color: '#6B4A57' }}>
                 {convo.profiles?.instagram_handle}
               </p>
-              <p className="text-xs truncate mt-1" style={{ color: '#b09d8a' }}>
+              <p className="text-xs truncate mt-1" style={{ color: '#6B4A57' }}>
                 {convo.content}
               </p>
             </div>
@@ -932,10 +932,10 @@ function DMAdminThread({ profile }) {
       {/* Info banner */}
       <div
         className="flex-shrink-0 flex items-center gap-3 px-4 py-3"
-        style={{ background: '#fdf6f3', borderBottom: '1px solid #ece4dc' }}
+        style={{ background: '#FEF9FB', borderBottom: '1px solid #FAE8EF' }}
       >
         <span style={{ fontSize: 20 }}>💌</span>
-        <p className="text-xs" style={{ color: '#8e7a68' }}>
+        <p className="text-xs" style={{ color: '#6B4A57' }}>
           Private messages with The Mama Edit admin. Only you and admin can see this.
         </p>
       </div>
@@ -944,12 +944,12 @@ function DMAdminThread({ profile }) {
       <div className="flex-1 overflow-y-auto px-4 py-4">
         <div className="max-w-lg mx-auto space-y-3">
           {loading ? (
-            <div className="text-center py-12" style={{ color: '#b09d8a' }}>Loading…</div>
+            <div className="text-center py-12" style={{ color: '#6B4A57' }}>Loading…</div>
           ) : messages.length === 0 ? (
             <div className="text-center py-16">
               <span style={{ fontSize: 32 }}>💌</span>
-              <p className="mt-3 text-sm font-medium" style={{ color: '#4e4238' }}>Message Admin</p>
-              <p className="mt-1 text-sm" style={{ color: '#b09d8a' }}>
+              <p className="mt-3 text-sm font-medium" style={{ color: '#2C1A22' }}>Message Admin</p>
+              <p className="mt-1 text-sm" style={{ color: '#6B4A57' }}>
                 Send a private message and admin will get back to you.
               </p>
             </div>
@@ -965,22 +965,22 @@ function DMAdminThread({ profile }) {
                   )}
                   <div className={`flex flex-col gap-0.5 ${isOwn ? 'items-end' : 'items-start'}`}>
                     {!isOwn && (
-                      <span className="text-xs font-medium px-1" style={{ color: '#8e7a68' }}>
+                      <span className="text-xs font-medium px-1" style={{ color: '#6B4A57' }}>
                         Admin
                       </span>
                     )}
                     <div
                       className="px-3.5 py-2 text-sm leading-relaxed"
                       style={{
-                        background: isOwn ? '#c9a99a' : '#fff',
-                        color: isOwn ? '#fff' : '#302820',
-                        border: isOwn ? 'none' : '1px solid #ece4dc',
+                        background: isOwn ? '#D4688A' : '#FEF9FB',
+                        color: isOwn ? '#fff' : '#2C1A22',
+                        border: isOwn ? 'none' : '1px solid #FAE8EF',
                         borderRadius: isOwn ? '18px 18px 5px 18px' : '18px 18px 18px 5px',
                       }}
                     >
                       {msg.content}
                     </div>
-                    <span className="text-xs px-1" style={{ color: '#b09d8a' }}>
+                    <span className="text-xs px-1" style={{ color: '#6B4A57' }}>
                       {new Date(msg.created_at).toLocaleTimeString('en-AU', { hour: 'numeric', minute: '2-digit' })}
                     </span>
                   </div>
@@ -996,8 +996,8 @@ function DMAdminThread({ profile }) {
       <div
         className="flex-shrink-0 px-4 py-3"
         style={{
-          background: '#fff',
-          borderTop: '1px solid #ece4dc',
+          background: '#FEF9FB',
+          borderTop: '1px solid #FAE8EF',
           paddingBottom: 'calc(env(safe-area-inset-bottom) + 80px)',
         }}
       >
@@ -1016,8 +1016,8 @@ function DMAdminThread({ profile }) {
             disabled={!input.trim() || sending}
             className="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center transition-all active:scale-95"
             style={{
-              background: input.trim() ? '#c9a99a' : '#ece4dc',
-              color: input.trim() ? '#fff' : '#b09d8a',
+              background: input.trim() ? '#D4688A' : '#FAE8EF',
+              color: input.trim() ? '#fff' : '#6B4A57',
             }}
           >
             <SendIcon />
@@ -1097,7 +1097,7 @@ function MessageBubble({ message, isOwn, isFirst, isLast, canDelete, canPin, onD
   const radius = 18
   const sharp = 5
   const ownStyle = {
-    background: '#c9a99a',
+    background: '#D4688A',
     color: '#fff',
     borderTopLeftRadius: radius,
     borderTopRightRadius: isFirst ? radius : sharp,
@@ -1105,9 +1105,9 @@ function MessageBubble({ message, isOwn, isFirst, isLast, canDelete, canPin, onD
     borderBottomLeftRadius: radius,
   }
   const otherStyle = {
-    background: '#fff',
-    color: '#302820',
-    border: '1px solid #ece4dc',
+    background: '#FEF9FB',
+    color: '#2C1A22',
+    border: '1px solid #FAE8EF',
     borderTopLeftRadius: isFirst ? radius : sharp,
     borderTopRightRadius: radius,
     borderBottomRightRadius: radius,
@@ -1126,10 +1126,10 @@ function MessageBubble({ message, isOwn, isFirst, isLast, canDelete, canPin, onD
           style={{
             bottom: 'calc(100% + 8px)',
             [isOwn ? 'right' : 'left']: 0,
-            background: '#fff',
+            background: '#FEF9FB',
             borderRadius: 16,
             boxShadow: '0 4px 24px rgba(0,0,0,0.14)',
-            border: '1px solid #f0e8e4',
+            border: '1px solid #FAE8EF',
             overflow: 'hidden',
             minWidth: 220,
           }}
@@ -1138,7 +1138,7 @@ function MessageBubble({ message, isOwn, isFirst, isLast, canDelete, canPin, onD
           {/* Quick reactions row */}
           <div
             className="flex items-center justify-between px-3 py-2.5"
-            style={{ borderBottom: '1px solid #f5f0ec' }}
+            style={{ borderBottom: '1px solid #FAE8EF' }}
           >
             {QUICK_REACTIONS.map((e) => (
               <button
@@ -1157,7 +1157,7 @@ function MessageBubble({ message, isOwn, isFirst, isLast, canDelete, canPin, onD
           <button
             onClick={handleCopy}
             className="w-full flex items-center justify-between px-4 py-3 text-sm active:bg-gray-50 transition-colors"
-            style={{ color: '#302820' }}
+            style={{ color: '#2C1A22' }}
           >
             <span>{copyDone ? 'Copied!' : 'Copy'}</span>
             <span style={{ fontSize: 16 }}>📋</span>
@@ -1167,7 +1167,7 @@ function MessageBubble({ message, isOwn, isFirst, isLast, canDelete, canPin, onD
             <button
               onClick={handlePin}
               className="w-full flex items-center justify-between px-4 py-3 text-sm active:bg-gray-50 transition-colors"
-              style={{ color: '#302820', borderTop: '1px solid #f5f0ec' }}
+              style={{ color: '#2C1A22', borderTop: '1px solid #FAE8EF' }}
             >
               <span>{message.is_pinned ? 'Unpin' : 'Pin'}</span>
               <span style={{ fontSize: 16 }}>📌</span>
@@ -1177,8 +1177,8 @@ function MessageBubble({ message, isOwn, isFirst, isLast, canDelete, canPin, onD
           {canDelete && (
             <button
               onClick={handleDelete}
-              className="w-full flex items-center justify-between px-4 py-3 text-sm active:bg-red-50 transition-colors"
-              style={{ color: '#dc2626', borderTop: '1px solid #f5f0ec' }}
+              className="w-full flex items-center justify-between px-4 py-3 text-sm active:bg-gray-50 transition-colors"
+              style={{ color: '#8C3A55', borderTop: '1px solid #FAE8EF' }}
             >
               <span>Delete</span>
               <span style={{ fontSize: 16 }}>🗑️</span>
@@ -1208,9 +1208,9 @@ function MessageBubble({ message, isOwn, isFirst, isLast, canDelete, canPin, onD
               onClick={(e) => { e.stopPropagation(); onReact(emoji) }}
               className="flex items-center gap-0.5 rounded-full text-xs font-medium transition-all"
               style={{
-                background: hasReacted ? '#edd5cc' : '#f5f0ec',
-                border: `1px solid ${hasReacted ? '#c9a99a' : 'transparent'}`,
-                color: '#302820',
+                background: hasReacted ? '#FAE8EF' : '#FAE8EF',
+                border: `1px solid ${hasReacted ? '#D4688A' : 'transparent'}`,
+                color: '#2C1A22',
                 fontSize: 12,
                 padding: '2px 8px',
               }}
