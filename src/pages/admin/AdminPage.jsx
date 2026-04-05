@@ -67,6 +67,13 @@ export default function AdminPage() {
       {/* Header */}
       <div className="px-4 pt-12 pb-4" style={{ borderBottom: '1px solid #ece4dc', background: '#fff' }}>
         <div className="max-w-2xl mx-auto">
+          <button
+            onClick={() => navigate('/settings')}
+            className="flex items-center gap-1 text-sm mb-3"
+            style={{ color: '#b09d8a' }}
+          >
+            ← Back to Settings
+          </button>
           <p className="section-label mb-1">Admin</p>
           <h1 className="text-xl font-semibold" style={{ color: '#302820' }}>The Mama Edit</h1>
         </div>

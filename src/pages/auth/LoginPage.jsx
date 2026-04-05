@@ -74,9 +74,7 @@ export default function LoginPage() {
           </div>
 
           {error && (
-            <div className="rounded-xl px-4 py-3 text-sm" style={{ background: '#fef2f2', color: '#991b1b' }}>
-              {error}
-            </div>
+            <p className="text-sm" style={{ color: '#e53e3e' }}>{error}</p>
           )}
 
           <button type="submit" disabled={loading} className="btn-primary mt-2">

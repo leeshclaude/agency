@@ -15,11 +15,25 @@ const AUSTRALIAN_STATES = [
 
 const STEPS = ['Your Details', 'Location', 'Account']
 
+function RequiredLabel({ children }) {
+  return (
+    <label className="block text-sm font-medium mb-1.5" style={{ color: '#4e4238' }}>
+      {children} <span style={{ color: '#e53e3e' }}>*</span>
+    </label>
+  )
+}
+
+function FieldError({ message }) {
+  if (!message) return null
+  return <p className="text-xs mt-1" style={{ color: '#e53e3e' }}>{message}</p>
+}
+
 export default function SignUpPage() {
   const navigate = useNavigate()
   const [step, setStep] = useState(0)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState({})
+  const [serverError, setServerError] = useState('')
 
   const [form, setForm] = useState({
     full_name: '',
@@ -33,37 +47,45 @@ export default function SignUpPage() {
   })
 
   function set(field) {
-    return (e) => setForm((f) => ({ ...f, [field]: e.target.value }))
+    return (e) => {
+      setForm((f) => ({ ...f, [field]: e.target.value }))
+      // Clear the error for this field as they type
+      if (fieldErrors[field]) setFieldErrors((fe) => ({ ...fe, [field]: '' }))
+    }
   }
 
   function validateStep() {
-    setError('')
+    const errors = {}
     if (step === 0) {
-      if (!form.full_name.trim()) return setError('Please enter your full name.') || false
-      if (!form.instagram_handle.trim()) return setError('Please enter your Instagram handle.') || false
+      if (!form.full_name.trim()) errors.full_name = 'Required'
+      if (!form.instagram_handle.trim()) errors.instagram_handle = 'Required'
       if (!form.instagram_followers || isNaN(form.instagram_followers) || Number(form.instagram_followers) < 0)
-        return setError('Please enter a valid follower count.') || false
+        errors.instagram_followers = 'Enter a valid follower count'
     }
     if (step === 1) {
-      if (!form.location_state) return setError('Please select your state.') || false
-      if (!form.location_city.trim()) return setError('Please enter your city.') || false
+      if (!form.location_state) errors.location_state = 'Required'
+      if (!form.location_city.trim()) errors.location_city = 'Required'
     }
     if (step === 2) {
-      if (!form.email.trim()) return setError('Please enter your email.') || false
-      if (!form.password) return setError('Please enter a password.') || false
-      if (form.password.length < 8) return setError('Password must be at least 8 characters.') || false
-      if (form.password !== form.confirm_password) return setError('Passwords do not match.') || false
+      if (!form.email.trim()) errors.email = 'Required'
+      if (!form.password) errors.password = 'Required'
+      else if (form.password.length < 8) errors.password = 'Must be at least 8 characters'
+      if (form.password && form.password !== form.confirm_password)
+        errors.confirm_password = 'Passwords do not match'
     }
-    return true
+    setFieldErrors(errors)
+    return Object.keys(errors).length === 0
   }
 
   function next() {
     if (!validateStep()) return
+    setFieldErrors({})
     setStep((s) => s + 1)
   }
 
   function back() {
-    setError('')
+    setFieldErrors({})
+    setServerError('')
     setStep((s) => s - 1)
   }
 
@@ -72,7 +94,7 @@ export default function SignUpPage() {
     if (!validateStep()) return
 
     setLoading(true)
-    setError('')
+    setServerError('')
 
     const handle = form.instagram_handle.startsWith('@')
       ? form.instagram_handle
@@ -93,7 +115,7 @@ export default function SignUpPage() {
     })
 
     if (signUpError) {
-      setError(signUpError.message)
+      setServerError(signUpError.message)
       setLoading(false)
       return
     }
@@ -110,7 +132,7 @@ export default function SignUpPage() {
         location_city: form.location_city.trim(),
         email: form.email.trim().toLowerCase(),
       }),
-    }).catch(() => {}) // silently ignore if email fails
+    }).catch(() => {})
 
     navigate('/pending')
   }
@@ -161,9 +183,7 @@ export default function SignUpPage() {
           {step === 0 && (
             <>
               <div>
-                <label className="block text-sm font-medium mb-1.5" style={{ color: '#4e4238' }}>
-                  Full name
-                </label>
+                <RequiredLabel>Full name</RequiredLabel>
                 <input
                   className="input-field"
                   type="text"
@@ -171,12 +191,12 @@ export default function SignUpPage() {
                   value={form.full_name}
                   onChange={set('full_name')}
                   autoComplete="name"
+                  style={fieldErrors.full_name ? { borderColor: '#e53e3e' } : {}}
                 />
+                <FieldError message={fieldErrors.full_name} />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1.5" style={{ color: '#4e4238' }}>
-                  Instagram handle
-                </label>
+                <RequiredLabel>Instagram handle</RequiredLabel>
                 <input
                   className="input-field"
                   type="text"
@@ -185,12 +205,12 @@ export default function SignUpPage() {
                   onChange={set('instagram_handle')}
                   autoComplete="off"
                   autoCapitalize="none"
+                  style={fieldErrors.instagram_handle ? { borderColor: '#e53e3e' } : {}}
                 />
+                <FieldError message={fieldErrors.instagram_handle} />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1.5" style={{ color: '#4e4238' }}>
-                  Instagram follower count
-                </label>
+                <RequiredLabel>Instagram follower count</RequiredLabel>
                 <input
                   className="input-field"
                   type="number"
@@ -198,7 +218,9 @@ export default function SignUpPage() {
                   min="0"
                   value={form.instagram_followers}
                   onChange={set('instagram_followers')}
+                  style={fieldErrors.instagram_followers ? { borderColor: '#e53e3e' } : {}}
                 />
+                <FieldError message={fieldErrors.instagram_followers} />
               </div>
             </>
           )}
@@ -206,31 +228,31 @@ export default function SignUpPage() {
           {step === 1 && (
             <>
               <div>
-                <label className="block text-sm font-medium mb-1.5" style={{ color: '#4e4238' }}>
-                  State
-                </label>
+                <RequiredLabel>State</RequiredLabel>
                 <select
                   className="input-field"
                   value={form.location_state}
                   onChange={set('location_state')}
+                  style={fieldErrors.location_state ? { borderColor: '#e53e3e' } : {}}
                 >
                   <option value="">Select your state</option>
                   {AUSTRALIAN_STATES.map((s) => (
                     <option key={s} value={s}>{s}</option>
                   ))}
                 </select>
+                <FieldError message={fieldErrors.location_state} />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1.5" style={{ color: '#4e4238' }}>
-                  City
-                </label>
+                <RequiredLabel>City</RequiredLabel>
                 <input
                   className="input-field"
                   type="text"
                   placeholder="e.g. Sydney"
                   value={form.location_city}
                   onChange={set('location_city')}
+                  style={fieldErrors.location_city ? { borderColor: '#e53e3e' } : {}}
                 />
+                <FieldError message={fieldErrors.location_city} />
               </div>
               <div className="card p-4 flex gap-3">
                 <span className="text-lg">🇦🇺</span>
@@ -244,9 +266,7 @@ export default function SignUpPage() {
           {step === 2 && (
             <>
               <div>
-                <label className="block text-sm font-medium mb-1.5" style={{ color: '#4e4238' }}>
-                  Email address
-                </label>
+                <RequiredLabel>Email address</RequiredLabel>
                 <input
                   className="input-field"
                   type="email"
@@ -255,12 +275,12 @@ export default function SignUpPage() {
                   onChange={set('email')}
                   autoComplete="email"
                   autoCapitalize="none"
+                  style={fieldErrors.email ? { borderColor: '#e53e3e' } : {}}
                 />
+                <FieldError message={fieldErrors.email} />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1.5" style={{ color: '#4e4238' }}>
-                  Password
-                </label>
+                <RequiredLabel>Password</RequiredLabel>
                 <input
                   className="input-field"
                   type="password"
@@ -268,12 +288,12 @@ export default function SignUpPage() {
                   value={form.password}
                   onChange={set('password')}
                   autoComplete="new-password"
+                  style={fieldErrors.password ? { borderColor: '#e53e3e' } : {}}
                 />
+                <FieldError message={fieldErrors.password} />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1.5" style={{ color: '#4e4238' }}>
-                  Confirm password
-                </label>
+                <RequiredLabel>Confirm password</RequiredLabel>
                 <input
                   className="input-field"
                   type="password"
@@ -281,15 +301,15 @@ export default function SignUpPage() {
                   value={form.confirm_password}
                   onChange={set('confirm_password')}
                   autoComplete="new-password"
+                  style={fieldErrors.confirm_password ? { borderColor: '#e53e3e' } : {}}
                 />
+                <FieldError message={fieldErrors.confirm_password} />
               </div>
             </>
           )}
 
-          {error && (
-            <div className="rounded-xl px-4 py-3 text-sm" style={{ background: '#fef2f2', color: '#991b1b' }}>
-              {error}
-            </div>
+          {serverError && (
+            <p className="text-sm" style={{ color: '#e53e3e' }}>{serverError}</p>
           )}
 
           <div className="flex gap-3 pt-2">
